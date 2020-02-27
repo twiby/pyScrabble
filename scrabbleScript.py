@@ -34,7 +34,7 @@ else:
 # scrabbleTree.children[0].children[-1].print()
 # scrabbleTree.children[0].children[-1].children[0].print()
 # print(scrabbleTree.getWord("azure").asString())
-
+# TWELLOS
 
 
 print({x.asString() for x in scrabbleTree.getAllAnagrams("apporte")})
