@@ -31,17 +31,33 @@ def writeScrabbleWordsToNewFile(path):
 	with open(path, 'w') as f:
 
 		for link in selectedLinks:
-			sys.stdout.write(link+"    ")
+			sys.stdout.write(link+" "*10)
 			sys.stdout.write('\r')
 			sys.stdout.flush()
 
 			page = requests.get(link)
 			tree = html.fromstring(page.content)
-			textContents = tree.xpath('//a/text()')
+			textContents = tree.xpath('//a/text()')[8:-9]
+			n = 0
 			for txt in textContents:
-				if any((c in chars) for c in txt) or txt=="Scrabblemania":
-					continue
-				f.write("%s\n" % txt)
+				if any((c in chars) for c in txt):
+					n+=1
+				else:
+					f.write("%s\n" % txt)
+			if n==0:
+				continue
+			otherLinks = tree.xpath('//a')[8:-9]
+			otherLinks = otherLinks[-n:]
+			for link in otherLinks:
+				sys.stdout.write(homePageLink+replaceWeirdC(link.attrib['href'])+" "*10)
+				sys.stdout.write('\r')
+				sys.stdout.flush()
+				page = requests.get(homePageLink+replaceWeirdC(link.attrib['href']))
+				tree = html.fromstring(page.content)
+				textContents = tree.xpath('//a/text()')[8:-9]
+				textContents = textContents[:-n]
+				for txt in textContents:
+					f.write("%s\n" % txt)
 	print()
 
 

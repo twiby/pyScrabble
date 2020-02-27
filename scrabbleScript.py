@@ -23,6 +23,7 @@ with add_path(python_sys_path):
 ### Get all the words of scrabble in a text file
 if not os.path.isfile(folder + "scrabbleWords.txt"):
 	utils.writeScrabbleWordsToNewFile(folder + "scrabbleWords.txt")
+bbb
 
 ### Organize the data in a tree
 if not os.path.isfile(folder + "scrabble.tree"):
@@ -34,7 +35,7 @@ else:
 # scrabbleTree.children[0].children[-1].print()
 # scrabbleTree.children[0].children[-1].children[0].print()
 # print(scrabbleTree.getWord("azure").asString())
-# TWELLOS
+
 
 
 print({x.asString() for x in scrabbleTree.getAllAnagrams("apporte")})
