@@ -51,7 +51,11 @@ class TreeNode(object):
 		self.children = []
 		self.parent = None
 
-
+	def getRoot(self):
+		node = self
+		while node.parent != None:
+			node = node.parent
+		return node
 
 
 	def addChild(self, child):
