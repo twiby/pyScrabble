@@ -1,23 +1,9 @@
 import os
 import sys
 
-### load other file
-class add_path():
-    def __init__(self, path):
-        self.path = path
-
-    def __enter__(self):
-        for i in range(len(self.path)):
-            sys.path.insert(0, self.path[i])
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        for i in range(len(self.path)):
-            sys.path.remove(self.path[i])
+import scrabbleTreeUtils as utils
 
 folder = os.path.dirname(os.path.realpath(__file__)) + "/"
-python_sys_path = [folder[:-1]]
-with add_path(python_sys_path):
-    utils = __import__("scrabbleTreeUtils")
 
 
 ### Get all the words of scrabble in a text file
@@ -38,4 +24,4 @@ else:
 
 
 
-print({x.asString() for x in scrabbleTree.getAllAnagrams("apporte")})
+print({x.asString() for x in scrabbleTree.getAllAnagrams("apotre")})
