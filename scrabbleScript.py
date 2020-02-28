@@ -2,6 +2,7 @@ import os
 import sys
 
 import pyScrabble.scrabbleTree as ps
+import pyScrabble.scrabbleBoard as sb
 
 folder = os.path.dirname(os.path.realpath(__file__)) + "/"
 
@@ -25,4 +26,5 @@ else:
 
 
 
-print({x.asString() for x in scrabbleTree.getAllAnagrams("apotre")})
+print({x.asString() for x in scrabbleTree.getAllAnagrams("mangerai")})
+board = sb.Board()

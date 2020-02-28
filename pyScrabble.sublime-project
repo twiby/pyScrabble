@@ -1,0 +1,16 @@
+{
+	"folders":
+	[
+		{
+			"path": "./"
+		}
+	],
+	"build_systems":
+	[
+		{
+			"name": "base script",
+			"working_dir": "${project_path}",
+			"cmd": ["${project_path}/../environments/tfgpu/bin/python","scrabbleScript.py"]
+		}
+	]
+}

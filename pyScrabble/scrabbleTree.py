@@ -106,6 +106,7 @@ class TreeNode(object):
 				yield from self.getAllPermutations(myList[:idx]+myList[idx+1:], prefix=prefix+[myList[idx]])
 
 	def getAllAnagrams(self, set):
+		'''Mix between permutations algo and breadth-first tree search'''
 		setList = list(set)
 		if len(setList)==0:
 			yield self
