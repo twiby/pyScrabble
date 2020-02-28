@@ -23,7 +23,7 @@ with add_path(python_sys_path):
 ### Get all the words of scrabble in a text file
 if not os.path.isfile(folder + "scrabbleWords.txt"):
 	utils.writeScrabbleWordsToNewFile(folder + "scrabbleWords.txt")
-bbb
+
 
 ### Organize the data in a tree
 if not os.path.isfile(folder + "scrabble.tree"):
