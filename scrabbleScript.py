@@ -27,4 +27,5 @@ else:
 
 
 print({x.asString() for x in scrabbleTree.getAllAnagrams("mangerai")})
+print({x.asString() for x in scrabbleTree.getWordsFrom("mangerai")})
 board = sb.Board()

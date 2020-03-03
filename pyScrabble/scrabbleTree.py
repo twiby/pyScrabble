@@ -122,6 +122,30 @@ class TreeNode(object):
 				continue
 			yield from node.getAllAnagrams(setList[:idx]+setList[idx+1:])
 
+	def getSubsetIndices(self, nLettersTotal, nLettersToTake, currentIndices=[]):
+		'''take nLettersToTake among nLettersTotal, as indices, 
+			without repetition or permutation'''
+		if nLettersToTake >= nLettersTotal:
+			yield [n for n in range(nLettersTotal)]
+			return
+		if len(currentIndices)==nLettersToTake:
+			yield currentIndices
+			return
+		min = 0 if len(currentIndices)==0 else currentIndices[-1]+1
+		for idx in range(min, nLettersTotal):
+			yield from self.getSubsetIndices(nLettersTotal, nLettersToTake, currentIndices=currentIndices+[idx])
+
+	def getSubset(self, set, nLetters):
+		'''generates sets of nLetters taken from set'''
+		for indices in self.getSubsetIndices(len(set), nLetters):
+			yield ''.join([set[n] for n in indices])
+
+	def getWordsFrom(self, set):
+		'''Return all playable words with letters from set'''
+		for nLetters in range(2, len(set)+1):
+			for subset in self.getSubset(set, nLetters):
+				yield from self.getAllAnagrams(subset)
+
 	### End of scrabble methods ###
 
 
