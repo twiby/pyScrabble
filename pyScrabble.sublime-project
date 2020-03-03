@@ -10,7 +10,7 @@
 		{
 			"name": "base script",
 			"working_dir": "${project_path}",
-			"cmd": ["${project_path}/../environments/tfgpu/bin/python","scrabbleScript.py"]
+			"cmd": ["${project_path}/../environments/pyScrabble/bin/python","scrabbleScript.py"]
 		}
 	]
 }
