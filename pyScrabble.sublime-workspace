@@ -523,7 +523,7 @@
 			"file": "pyScrabble/scrabbleTree.py",
 			"settings":
 			{
-				"buffer_size": 4573,
+				"buffer_size": 4671,
 				"line_ending": "Unix"
 			}
 		},
@@ -540,7 +540,7 @@
 			"file": "pyScrabble/scrabbleBoard.py",
 			"settings":
 			{
-				"buffer_size": 1030,
+				"buffer_size": 1013,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -593,8 +593,8 @@
 	],
 	"file_history":
 	[
-		"/home/mobshamilton/pyScrabble/pyScrabble.sublime-project",
 		"/home/mobshamilton/pyScrabble/pyScrabble/scrabbleTree.py",
+		"/home/mobshamilton/pyScrabble/pyScrabble.sublime-project",
 		"/home/mobshamilton/OpenEphys/plugin-GUI/open-ephys-GUI.sublime-project",
 		"/home/mobshamilton/OpenEphys/plugin-GUI/Plugins/OnlineDecoding/SpikeSorterWithStim/SpikeSortBoxesWithStim.cpp",
 		"/home/mobshamilton/OpenEphys/plugin-GUI/Build/open-ephys-GUI.sublime-project",
@@ -762,15 +762,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4573,
+						"buffer_size": 4671,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								2198,
+								2198
 							]
 						],
 						"settings":
@@ -779,7 +779,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1377.0,
+						"translation.y": 1454.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -798,8 +798,8 @@
 						"selection":
 						[
 							[
-								865,
-								865
+								559,
+								559
 							]
 						],
 						"settings":
@@ -819,20 +819,21 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1030,
+						"buffer_size": 1013,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1029,
-								1029
+								1012,
+								1012
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
