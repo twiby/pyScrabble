@@ -113,14 +113,19 @@ class TreeNode(object):
 		'''Mix between permutations algo and breadth-first tree search'''
 		setList = list(set)
 		if len(setList)==0:
-			yield self
+			if self.isWord:
+				yield self
+			else:
+				return
 		for idx in range(len(setList)):
-			node = self.getNextBranch(setList[idx])
-			if node==None:
-				continue
-			if len(setList)==1 and not node.isWord:
-				continue
-			yield from node.getAllAnagrams(setList[:idx]+setList[idx+1:])
+			if setList[idx]=="0":
+				for child in self.children:
+					yield from child.getAllAnagrams(setList[:idx]+setList[idx+1:])
+			else:
+				node = self.getNextBranch(setList[idx])
+				if node==None:
+					continue
+				yield from node.getAllAnagrams(setList[:idx]+setList[idx+1:])
 
 	def getSubsetIndices(self, nLettersTotal, nLettersToTake, currentIndices=[]):
 		'''take nLettersToTake among nLettersTotal, as indices, 

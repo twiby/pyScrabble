@@ -25,8 +25,8 @@ else:
 # print(scrabbleTree.getWord("azure").asString())
 
 
-
-print({x.asString() for x in scrabbleTree.getAllAnagrams("mangerai")})
-print({x.asString() for x in scrabbleTree.getWordsFrom("mangerai")})
+res = {x.asString() for x in scrabbleTree.getWordsFrom("manger0i")}
+print(res)
+# print([scrabbleTree.getWord(x).isWord for x in res])
+# print({x.asString() for x in scrabbleTree.getAllAnagrams("manger0i")})
 board = sb.Board()
-board.print()
