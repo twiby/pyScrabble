@@ -208,4 +208,5 @@ def loadTree(path):
 	print("loading word tree")
 	with open(path, "rb") as f:
 		tree = pickle.load(f)
+	print('done')
 	return tree
