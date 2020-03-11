@@ -93,6 +93,7 @@ class Board(object):
 		letterFactorGrid = np.pad(constants.letterFactorGrid, ((0, 7),(0, 7)), 'reflect')
 		self.tiles = np.array([[self.Tile(wordFactorGrid[x,y], letterFactorGrid[x,y]) for x in range(15)] for y in range(15)], dtype=object)
 		self.setOfLetters = constants.setOfLetters
+		shuffle(self.setOfLetters)
 
 		self.log = []
 		self.players = pl.Players(self, nPlayers)
@@ -160,11 +161,15 @@ class Board(object):
 		'''SHOULD NOT USE A WORD, SHOULD USE ANOTHER OBJECT RELATED TO A PLAYER, FOR JOKER+POP REASONS'''
 		self.isValidMove(word)
 		self.allWordsExist(word)
-		score = self.getScore(word)
 		for x,y,c in word.getLetters():
 			if self.tiles[x,y].playTile(c):
-				set.remove(c)
+				try:
+					set.remove(c)
+				except ValueError:
+					set.remove("0")
+					c = "0"
 		self.log.append(word)
+		score = self.getScore(word)
 		return score + 50*int(set==[])
 
 	def getNewLetters(self, nNewLetters):
