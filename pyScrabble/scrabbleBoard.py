@@ -33,7 +33,6 @@ class Word(object):
 		return len(self.letters)
 
 	def getOtherWordsFormed(self, board):
-		otherWords = []
 		for letter in self.letters:
 			if board.tiles[letter.x, letter.y].letter!=None:
 				continue
@@ -55,8 +54,7 @@ class Word(object):
 					n+=1
 				word += letter.c if board.tiles[posPre[0]+n*(1-self.xI), posPre[1]+n*self.xI].letter==None \
 					else board.tiles[posPre[0]+n*(1-self.xI), posPre[1]+n*self.xI].letter
-				otherWords.append(Word(posPre[0], posPre[1], horizontal=not self.horizontal, word=word))
-		return otherWords
+				yield Word(posPre[0], posPre[1], horizontal=not self.horizontal, word=word)
 
 
 
@@ -72,7 +70,7 @@ class Board(object):
 
 		def playTile(self, c):
 			if self.letter != None and self.letter != c:
-				raise ValueError("This tile has been played already !")
+				raise ValueError("Tile not compatible !")
 			else:
 				self.letter = c
 				self.wordFactor = 1
@@ -97,7 +95,11 @@ class Board(object):
 		for player in self.players.players:
 			print(player.getStatus())
 
-	def getScore(self, word):
+	def newWordsFormed(self, word):
+		yield word
+		yield from word.getOtherWordsFormed(self)
+
+	def getWordScore(self, word):
 		score = 0
 		wordFactor = 1
 		for x,y,c in word.getLetters():
@@ -105,13 +107,13 @@ class Board(object):
 			score += self.tiles[x,y].letterFactor * constants.points[c]
 		return score * wordFactor
 
+	def getScore(self, word):
+		return sum(self.getWordScore(w) for w in self.newWordsFormed(word))
+
 	def play(self, word):
 		'''SHOULD CALL ANOTHER METHOD TO CHECK VALIDITY OF MOVE'''
 		'''SHOULD NOT USE A WORD, SHOULD USE ANOTHER OBJECT RELATED TO A PLAYER, FOR JOKER+POP REASONS'''
 		score = self.getScore(word)
-		for otherWord in word.getOtherWordsFormed(self):
-			print(otherWord)
-			score += self.getScore(otherWord)
 		for x,y,c in word.getLetters():
 			self.tiles[x,y].playTile(c)
 		self.log.append(word)
