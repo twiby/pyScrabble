@@ -40,12 +40,12 @@ class Player(object):
 	def __init__(self, board, wordTree):
 		self.board = board
 		self.score = 0
-		self.set = ''
+		self.set = []
 		self.wordTree = wordTree
 		self.updateSet()
 
 	def updateSet(self):
-		self.set = self.board.getNewLetters(7-len(self.set))
+		self.set += self.board.getNewLetters(7-len(self.set))
 
 	def getStatus(self):
 		status = ''
@@ -55,8 +55,9 @@ class Player(object):
 		return status
 
 	def playOneTurn(self):
+		print(self.set)
 		word = self.wordTree.getWordsFrom(self.set)
-		self.score += self.board.play(scrabbleBoard.Word(7,6,horizontal=True, word="ewe"))
-		self.score += self.board.play(scrabbleBoard.Word(7,9,horizontal=False, word="saline"))
-		self.score += self.board.play(scrabbleBoard.Word(9,7,horizontal=True, word="atlas"))
-		self.score += self.board.play(scrabbleBoard.Word(11,10,horizontal=False, word="et"))
+		self.score += self.board.play(
+			scrabbleBoard.Word(7,6,horizontal=True, word=next(word).asString()), self.set)
+		self.updateSet()
+		print(self.set)

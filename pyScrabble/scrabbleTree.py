@@ -156,6 +156,10 @@ class TreeNode(object):
 
 
 	### Utils
+	def __len__(self):
+		return len(self.asString())
+	def __str__(self):
+		return self.asString()
 	def asString(self):
 		prefix=""
 		node = self.parent

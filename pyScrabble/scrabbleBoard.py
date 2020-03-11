@@ -31,6 +31,9 @@ class Word(object):
 	def __str__(self):
 		return ''.join([l.c for l in self.letters])
 
+	def __len__(self):
+		return len(self.letters)
+
 	def getLetters(self):
 		for letter in self.letters:
 			yield letter.x, letter.y, letter.c
@@ -77,10 +80,13 @@ class Board(object):
 		def playTile(self, c):
 			if self.letter != None and self.letter != c:
 				raise TileError("Tile not compatible !")
+			elif self.letter == c:
+				return False
 			else:
 				self.letter = c
 				self.wordFactor = 1
 				self.letterFactor = 1
+				return True
 
 	def __init__(self, nPlayers=1):
 		wordFactorGrid = np.pad(constants.wordFactorGrid, ((0, 7),(0, 7)), 'reflect')
@@ -150,15 +156,16 @@ class Board(object):
 			else:
 				raise WordError("The word must interact with other tiles in some way")
 
-	def play(self, word):
+	def play(self, word, set):
 		'''SHOULD NOT USE A WORD, SHOULD USE ANOTHER OBJECT RELATED TO A PLAYER, FOR JOKER+POP REASONS'''
 		self.isValidMove(word)
 		self.allWordsExist(word)
 		score = self.getScore(word)
 		for x,y,c in word.getLetters():
-			self.tiles[x,y].playTile(c)
+			if self.tiles[x,y].playTile(c):
+				set.remove(c)
 		self.log.append(word)
-		return score
+		return score + 50*int(set==[])
 
 	def getNewLetters(self, nNewLetters):
 		newLetters = []
