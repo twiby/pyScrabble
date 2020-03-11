@@ -56,7 +56,7 @@ class Player(object):
 
 	def playOneTurn(self):
 		word = self.wordTree.getWordsFrom(self.set)
-		self.score += self.board.play(scrabbleBoard.Word(0,0,horizontal=True, word="ebe"))
-		self.score += self.board.play(scrabbleBoard.Word(0,3,horizontal=False, word="abea"))
-		self.score += self.board.play(scrabbleBoard.Word(2,1,horizontal=True, word="eaegh"))
-		self.score += self.board.play(scrabbleBoard.Word(3,2,horizontal=True, word="eaegh"))
+		self.score += self.board.play(scrabbleBoard.Word(7,6,horizontal=True, word="ewe"))
+		self.score += self.board.play(scrabbleBoard.Word(7,9,horizontal=False, word="saline"))
+		self.score += self.board.play(scrabbleBoard.Word(9,7,horizontal=True, word="atlas"))
+		self.score += self.board.play(scrabbleBoard.Word(11,10,horizontal=False, word="et"))

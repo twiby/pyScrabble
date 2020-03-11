@@ -3,6 +3,10 @@ from random import shuffle
 from pyScrabble import constants
 from pyScrabble import players as pl
 
+class TileError(Exception):
+	pass
+class WordError(Exception):
+	pass
 
 
 class Word(object):
@@ -11,6 +15,8 @@ class Word(object):
 			self.x = x
 			self.y = y
 			self.c = c
+			if self.x >14 or self.y > 14 or self.x<0 or self.y<0:
+				raise WordError("letter outside map")
 
 	def __init__(self, x, y, horizontal=True, word=[]):
 		self.horizontal = horizontal
@@ -70,7 +76,7 @@ class Board(object):
 
 		def playTile(self, c):
 			if self.letter != None and self.letter != c:
-				raise ValueError("Tile not compatible !")
+				raise TileError("Tile not compatible !")
 			else:
 				self.letter = c
 				self.wordFactor = 1
@@ -95,7 +101,7 @@ class Board(object):
 		for player in self.players.players:
 			print(player.getStatus())
 
-	def newWordsFormed(self, word):
+	def allWordsFormed(self, word):
 		yield word
 		yield from word.getOtherWordsFormed(self)
 
@@ -108,11 +114,46 @@ class Board(object):
 		return score * wordFactor
 
 	def getScore(self, word):
-		return sum(self.getWordScore(w) for w in self.newWordsFormed(word))
+		return sum(self.getWordScore(w) for w in self.allWordsFormed(word))
+
+	def wordExists(self, word):
+		if self.players.wordTree.getWord(str(word))==None:
+			return False
+		else:
+			return True
+
+	def allWordsExist(self, word):
+		for w in self.allWordsFormed(word):
+			if self.wordExists(w)==False:
+				raise(WordError(str(w)+" does not exist"))
+		return
+
+	def isValidMove(self, word):
+		if len(self.log)==0:
+			passThroughMiddle = False
+			for x,y,_ in word.getLetters():
+				if x==7 and y==7:
+					passThroughMiddle = True
+			if passThroughMiddle:
+				return
+			else:
+				raise WordError("The first word must pass by middle tile")
+		if len([w for w in self.allWordsFormed(word)])>1:
+			return
+		else:
+			usesExistingTile = False
+			for x,y,_ in word.getLetters():
+				if self.tiles[x,y].letter is not None:
+					usesExistingTile = True
+			if usesExistingTile:
+				return
+			else:
+				raise WordError("The word must interact with other tiles in some way")
 
 	def play(self, word):
-		'''SHOULD CALL ANOTHER METHOD TO CHECK VALIDITY OF MOVE'''
 		'''SHOULD NOT USE A WORD, SHOULD USE ANOTHER OBJECT RELATED TO A PLAYER, FOR JOKER+POP REASONS'''
+		self.isValidMove(word)
+		self.allWordsExist(word)
 		score = self.getScore(word)
 		for x,y,c in word.getLetters():
 			self.tiles[x,y].playTile(c)
