@@ -41,6 +41,16 @@ class Word(object):
 	def numLetter(self):
 		return len(self.letters)
 
+	def replaceJoker(self, set):
+		newWord = Word(self.letters[0].x, self.letters[0].y, horizontal=self.horizontal, word=str(self))
+		for letter in newWord.letters:
+			if letter.c not in set:
+				if '0' in set:
+					letter.c = '0'
+				else:
+					raise TileError('Tile is not in the playe set')
+		return newWord
+
 	def getOtherWordsFormed(self, board):
 		for letter in self.letters:
 			if board.tiles[letter.x, letter.y].letter!=None:
@@ -98,8 +108,10 @@ class Board(object):
 		self.log = []
 		self.players = pl.Players(self, nPlayers)
 
+	
+	def playOneTurn(self):
 		self.players.playOneTurn()
-		
+
 	def print(self):
 		for x in range(15):
 			str = ''.join([self.tiles[x,y].letter+" " if self.tiles[x,y].letter!=None else "_ " for y in range(15)])
@@ -161,15 +173,15 @@ class Board(object):
 		'''SHOULD NOT USE A WORD, SHOULD USE ANOTHER OBJECT RELATED TO A PLAYER, FOR JOKER+POP REASONS'''
 		self.isValidMove(word)
 		self.allWordsExist(word)
+		score = self.getScore(word.replaceJoker(set))
 		for x,y,c in word.getLetters():
 			if self.tiles[x,y].playTile(c):
 				try:
 					set.remove(c)
 				except ValueError:
-					set.remove("0")
-					c = "0"
+					set.remove('0')
+					c = '0'
 		self.log.append(word)
-		score = self.getScore(word)
 		return score + 50*int(set==[])
 
 	def getNewLetters(self, nNewLetters):
