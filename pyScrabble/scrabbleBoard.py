@@ -41,14 +41,18 @@ class Word(object):
 	def numLetter(self):
 		return len(self.letters)
 
-	def replaceJoker(self, set):
+	def replaceJoker(self, set, board):
 		newWord = Word(self.letters[0].x, self.letters[0].y, horizontal=self.horizontal, word=str(self))
 		for letter in newWord.letters:
 			if letter.c not in set:
-				if '0' in set:
-					letter.c = '0'
+				boardLetter = board.tiles[letter.x, letter.y].letter
+				if boardLetter == None:
+					if '0' in set:
+						letter.c = '0'
+					else:
+						raise WordError('unexpected letter')
 				else:
-					raise TileError('Tile is not in the playe set')
+					letter.c = boardLetter
 		return newWord
 
 	def getOtherWordsFormed(self, board):
@@ -61,7 +65,7 @@ class Word(object):
 				foundAnotherWord = True
 				posPre[self.xI] -= 1
 			posPost = [letter.x, letter.y]
-			while posPost[self.xI]<15 and board.tiles[posPost[0]+(1-self.xI), posPost[1]+self.xI].letter!=None:
+			while posPost[self.xI]<14 and board.tiles[posPost[0]+(1-self.xI), posPost[1]+self.xI].letter!=None:
 				foundAnotherWord = True
 				posPost[self.xI] += 1
 
@@ -144,8 +148,8 @@ class Board(object):
 	def allWordsExist(self, word):
 		for w in self.allWordsFormed(word):
 			if self.wordExists(w)==False:
-				raise(WordError(str(w)+" does not exist"))
-		return
+				return False
+		return True
 
 	def isValidMove(self, word):
 		if len(self.log)==0:
@@ -154,33 +158,38 @@ class Board(object):
 				if x==7 and y==7:
 					passThroughMiddle = True
 			if passThroughMiddle:
-				return
+				return True
 			else:
-				raise WordError("The first word must pass by middle tile")
+				return False
 		if len([w for w in self.allWordsFormed(word)])>1:
-			return
+			return True
 		else:
 			usesExistingTile = False
 			for x,y,_ in word.getLetters():
 				if self.tiles[x,y].letter is not None:
 					usesExistingTile = True
 			if usesExistingTile:
-				return
+				return True
 			else:
-				raise WordError("The word must interact with other tiles in some way")
+				return False
 
 	def play(self, word, set):
 		'''SHOULD NOT USE A WORD, SHOULD USE ANOTHER OBJECT RELATED TO A PLAYER, FOR JOKER+POP REASONS'''
-		self.isValidMove(word)
-		self.allWordsExist(word)
-		score = self.getScore(word.replaceJoker(set))
+		if not self.isValidMove(word):
+			raise WordError("word is not a valid move")
+		if not self.allWordsExist(word):
+			raise WordError("some words formed do not exist")
+		score = self.getScore(word.replaceJoker(set, self))
 		for x,y,c in word.getLetters():
-			if self.tiles[x,y].playTile(c):
-				try:
-					set.remove(c)
-				except ValueError:
-					set.remove('0')
-					c = '0'
+			try:
+				if self.tiles[x,y].playTile(c):
+					try:
+						set.remove(c)
+					except ValueError:
+						set.remove('0')
+						c = '0'
+			except TileError:
+				print("Error while playing",word,"at",word.x,word.y,"horizontal",word.horizontal)
 		self.log.append(word)
 		return score + 50*int(set==[])
 

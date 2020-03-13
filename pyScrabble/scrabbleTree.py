@@ -1,5 +1,5 @@
 import sys
-
+import numpy as np
 from bisect import bisect_left
 
 class bcolors:
@@ -109,23 +109,48 @@ class TreeNode(object):
 			for idx in range(len(myList)):
 				yield from self.getAllPermutations(myList[:idx]+myList[idx+1:], prefix=prefix+[myList[idx]])
 
-	def getAllAnagrams(self, set):
+	def getAllAnagrams(self, set, constraintLetters=[], constraintIndices=[]):
 		'''Mix between permutations algo and breadth-first tree search'''
 		setList = list(set)
+		constraintLetters = list(constraintLetters)
+		constraintIndices = np.array(constraintIndices)
+		if len(constraintIndices) != len(constraintLetters):
+			raise ValueError("constraint on indices and letters must be equals")
+
 		if len(setList)==0:
-			if self.isWord:
-				yield self
+			if 0 in constraintIndices:
+				for x in range(len(constraintLetters)):
+					if constraintIndices[x]==0:
+						node = self.getNextBranch(constraintLetters[x])
+						break
+				if node!=None and node.isWord:
+					yield node
+				else:
+					return
 			else:
-				return
+				if self.isWord:
+					yield self
+				else:
+					return
+
 		for idx in range(len(setList)):
-			if setList[idx]=="0":
+			if 0 in constraintIndices:
+				for x in range(len(constraintLetters)):
+					if constraintIndices[x]==0:
+						node = self.getNextBranch(constraintLetters[x])
+						break
+				if node==None:
+					return
+				else:
+					yield from node.getAllAnagrams(setList, constraintLetters=constraintLetters, constraintIndices=constraintIndices-1)
+			elif setList[idx]=="0":
 				for child in self.children:
-					yield from child.getAllAnagrams(setList[:idx]+setList[idx+1:])
+					yield from child.getAllAnagrams(setList[:idx]+setList[idx+1:], constraintLetters=constraintLetters, constraintIndices=constraintIndices-1)
 			else:
 				node = self.getNextBranch(setList[idx])
 				if node==None:
 					continue
-				yield from node.getAllAnagrams(setList[:idx]+setList[idx+1:])
+				yield from node.getAllAnagrams(setList[:idx]+setList[idx+1:], constraintLetters=constraintLetters, constraintIndices=constraintIndices-1)
 
 	def getSubsetIndices(self, nLettersTotal, nLettersToTake, currentIndices=[]):
 		'''take nLettersToTake among nLettersTotal, as indices, 
@@ -145,11 +170,15 @@ class TreeNode(object):
 		for indices in self.getSubsetIndices(len(set), nLetters):
 			yield ''.join([set[n] for n in indices])
 
-	def getWordsFrom(self, set):
+	def getWordsFrom(self, set, *args, nLetters=None, **kwargs):
 		'''Return all playable words with letters from set'''
-		for nLetters in range(2, len(set)+1):
+		if nLetters != None:
 			for subset in self.getSubset(set, nLetters):
-				yield from self.getAllAnagrams(subset)
+				yield from self.getAllAnagrams(subset, *args, **kwargs)
+		else:
+			for nLetters in range(2, len(set)+1):
+				for subset in self.getSubset(set, nLetters):
+					yield from self.getAllAnagrams(subset, *args, **kwargs)
 
 	### End of scrabble methods ###
 

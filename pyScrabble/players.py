@@ -55,6 +55,7 @@ class Player(object):
 		return status
 
 	def playOneTurn(self):
+		bestWord = None
 		bestWordScore = 0
 		if self.board.log == []:
 			# First move of the game
@@ -62,19 +63,44 @@ class Player(object):
 			if wordList == []:
 				wordList = list(self.wordTree.getWordsFrom(self.set))
 			wordList = list({w.asString() for w in wordList})
-			if wordList == []:
-				self.board.setOfLetters += self.set
-				self.set = self.board.getNewLetters(7)
-				return
 			for w in wordList:
 				for y in range(8-len(w), 8):
 					wordObj = sb.Word(7,y, word=w)
-					wordScore = self.board.getScore(wordObj.replaceJoker(self.set))
+					wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board))
 					if wordScore > bestWordScore:
 						bestWord = wordObj
 						bestWordScore = wordScore
 
-		self.score += self.board.play(bestWord, self.set)
-		self.updateSet()
+		else:
+			# for vertical words, use "with" syntax to enter transposed board
+			for x in range(15):
+				for y in range(15):
+					print(x,y)
+					constraintLetters=[]
+					constraintIndices=[]
+					n=2
+					while n-len(constraintIndices)<8 and x+n<16:
+						if self.board.tiles[x+n-1,y].letter!=None:
+							constraintLetters.append(self.board.tiles[x+n-1,y].letter)
+							constraintIndices.append(n-1)
+						elif x+n>=15 or self.board.tiles[x+n,y].letter!=None:
+							n+=1
+							continue
+						wObj = sb.Word(x,y, word='0'*n, horizontal=False)
+						if self.board.isValidMove(wObj):
+							words=self.wordTree.getWordsFrom(self.set, nLetters=n, constraintIndices=constraintIndices, constraintLetters=constraintLetters)
+							for w in words:
+								print(w.asString())
+								wordObj = sb.Word(x,y, horizontal=False, word=w.asString())
+								wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board)) + 50*int((n-len(constraintLetters))==7)
+								if self.board.allWordsExist(wordObj) and wordScore > bestWordScore:
+									bestWordScore = wordScore
+									bestWord = wordObj
+						n+=1
 
-
+		if bestWord==None:
+			self.board.setOfLetters += self.set
+			self.set = self.board.getNewLetters(7)
+		else:
+			self.score += self.board.play(bestWord, self.set)
+			self.updateSet()
