@@ -94,7 +94,7 @@ class Player(object):
 						constraintLetters=[]
 						constraintIndices=[]
 						n=2
-						while n-len(constraintIndices)<8 and x+n<15:
+						while n-len(constraintIndices)<8 and x+n<16:
 							if self.board.tiles[x+n-1,y].letter!=None:
 								constraintLetters.append(self.board.tiles[x+n-1,y].letter)
 								constraintIndices.append(n-1)
