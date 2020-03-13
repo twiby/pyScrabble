@@ -20,6 +20,7 @@ class Word(object):
 
 	def __init__(self, x, y, horizontal=True, word=[]):
 		self.horizontal = horizontal
+		self.x, self.y = x, y
 		self.xI = int(not self.horizontal)
 		self.letters = []
 		for n in range(len(word)):
@@ -50,7 +51,7 @@ class Word(object):
 					if '0' in set:
 						letter.c = '0'
 					else:
-						raise WordError('unexpected letter')
+						raise WordError('unexpected letter :'+letter.c)
 				else:
 					letter.c = boardLetter
 		return newWord
@@ -112,6 +113,18 @@ class Board(object):
 		self.log = []
 		self.players = pl.Players(self, nPlayers)
 
+	def start(self):
+		while not self.players.done():
+			self.print()
+			self.playOneTurn()
+		if self.players.finisher!=None:
+			bonus = 0
+			for p in self.players.players:
+				temp = sum(constans.points(c) for c in p.set)
+				p.score -= temp
+				bonus =+ temp
+			self.players.finisher.score += bonus
+		self.print()
 	
 	def playOneTurn(self):
 		self.players.playOneTurn()
@@ -123,6 +136,7 @@ class Board(object):
 		print()
 		for player in self.players.players:
 			print(player.getStatus())
+		print('lettres left:',len(self.setOfLetters))
 
 	def allWordsFormed(self, word):
 		yield word
@@ -174,7 +188,6 @@ class Board(object):
 				return False
 
 	def play(self, word, set):
-		'''SHOULD NOT USE A WORD, SHOULD USE ANOTHER OBJECT RELATED TO A PLAYER, FOR JOKER+POP REASONS'''
 		if not self.isValidMove(word):
 			raise WordError("word is not a valid move")
 		if not self.allWordsExist(word):
@@ -189,6 +202,7 @@ class Board(object):
 						set.remove('0')
 						c = '0'
 			except TileError:
+				self.print()
 				print("Error while playing",word,"at",word.x,word.y,"horizontal",word.horizontal)
 		self.log.append(word)
 		return score + 50*int(set==[])
