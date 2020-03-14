@@ -99,17 +99,6 @@ class TreeNode(object):
 		else:
 			return node
 
-	### Scrabble methodes ###
-	### The variable 'set' stands for the set of letters that the player wants to play, plus maybe other letters from the board.
-
-	def getAllPermutations(self, set, prefix=[]):
-		'''Not used in practice (because we use a tree structure). We keep it here for reference'''
-		myList = list(set)
-		if len(myList)==1:
-			yield prefix + myList
-		else:
-			for idx in range(len(myList)):
-				yield from self.getAllPermutations(myList[:idx]+myList[idx+1:], prefix=prefix+[myList[idx]])
 
 	def getAllAnagrams(self, set, constraintLetters=[], constraintIndices=[], nLetters=None):
 		'''Mix between permutations algo and breadth-first tree search'''
@@ -157,7 +146,7 @@ class TreeNode(object):
 				yield from node.getAllAnagrams(setList[:idx]+setList[idx+1:], constraintLetters=constraintLetters, constraintIndices=constraintIndices-1, nLetters=nLetters)
 
 
-	### End of scrabble methods ###
+
 
 
 

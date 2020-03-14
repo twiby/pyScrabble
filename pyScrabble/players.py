@@ -17,15 +17,6 @@ if not os.path.isfile(folder + "scrabble.tree"):
 	scrabbleTree = ps.createTree(folder + "scrabbleWords.txt")
 	scrabbleTree.save(folder + "scrabble.tree")
 
-# scrabbleTree.children[0].children[-1].print()
-# scrabbleTree.children[0].children[-1].children[0].print()
-# print(scrabbleTree.getWord("azure").asString())
-
-
-# res = {x.asString() for x in scrabbleTree.getWordsFrom("manger0i")}
-# print(res)
-# print([scrabbleTree.getWord(x).isWord for x in res])
-# print({x.asString() for x in scrabbleTree.getAllAnagrams("manger0i")})
 
 
 class Players(object):
@@ -69,8 +60,6 @@ class Player(object):
 		return status
 
 	def playOneTurn(self):
-		if (self.done):
-			return
 		bestWord = None
 		bestWordScore = 0
 		if self.board.log == []:
@@ -88,7 +77,6 @@ class Player(object):
 						bestWordScore = wordScore
 
 		else:
-			# for vertical words, use "with" syntax to enter transposed board
 			for horizontal in [False, True]:
 				for x in range(15):
 					for y in range(15):
@@ -124,10 +112,8 @@ class Player(object):
 							constraintLetters=constraintLetters,
 							nLetters=nLettersPossible)}
 						for w in words:
-							if len(w) not in nLettersPossible:
-								continue
 							wordObj = sb.Word(x,y, horizontal=False, word=w)
-							wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board)) + 50*int(wordObj.numTrueLetters(self.board)==7)
+							wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board))
 							if self.board.allWordsExist(wordObj) and wordScore > bestWordScore:
 								bestWordScore = wordScore
 								bestWord = wordObj

@@ -127,9 +127,9 @@ class Board(object):
 		if self.players.finisher!=None:
 			bonus = 0
 			for p in self.players.players:
-				temp = sum(constans.points(c) for c in p.set)
+				temp = sum(constants.points[c] for c in p.set)
 				p.score -= temp
-				bonus =+ temp
+				bonus += temp
 			self.players.finisher.score += bonus
 		self.print()
 	
@@ -158,7 +158,7 @@ class Board(object):
 		return score * wordFactor
 
 	def getScore(self, word):
-		return sum(self.getWordScore(w) for w in self.allWordsFormed(word))
+		return sum(self.getWordScore(w) for w in self.allWordsFormed(word)) + 50*int(word.numTrueLetters(self)==7)
 
 	def wordExists(self, word):
 		if self.players.wordTree.getWord(str(word))==None:
@@ -173,7 +173,7 @@ class Board(object):
 		return True
 
 	def isValidMove(self, word):
-		if len(self.log)==0:
+		if len(self.log)==0: # First move must pass through middle
 			passThroughMiddle = False
 			for x,y,_ in word.getLetters():
 				if x==7 and y==7:
@@ -182,10 +182,15 @@ class Board(object):
 				return True
 			else:
 				return False
-		if len([w for w in self.allWordsFormed(word)])>1:
+		for x,y,_ in word.getLetters(): # word object must contain whole word
+			pass
+		if x+word.xI<15 and y+(1-word.xI)<15:
+			if self.tiles[x+word.xI,y+(1-word.xI)].letter!=None:
+				return False
+		if len([w for w in self.allWordsFormed(word)])>1: # maybe other words formed
 			return True
 		else:
-			playsAtLeastOneTile = False
+			playsAtLeastOneTile = False # if not, must use another letter of the board, and use one new letter
 			usesExistingTile = False
 			for x,y,_ in word.getLetters():
 				if self.tiles[x,y].letter==None:
@@ -215,7 +220,7 @@ class Board(object):
 				self.print()
 				print("Error while playing",word,"at",word.x,word.y,"horizontal",word.horizontal)
 		self.log.append(word)
-		return score + 50*int(set==[])
+		return score
 
 	def getNewLetters(self, nNewLetters):
 		newLetters = []

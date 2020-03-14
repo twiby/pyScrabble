@@ -7,13 +7,6 @@ import pyScrabble.scrabbleBoard as sb
 
 board = sb.Board()
 board.start()
-# board.print()
-# board.playOneTurn()
-# board.print()
-# board.playOneTurn()
-# board.print()
-# board.playOneTurn()
-# board.print()
 
 # nTot = 10000
 # scrabbleFound = 0
