@@ -1,5 +1,6 @@
 import os
 import sys
+import numpy as np
 import pyScrabble.scrabbleTree as ps
 from pyScrabble import scrabbleBoard as sb
 
@@ -74,7 +75,7 @@ class Player(object):
 		bestWordScore = 0
 		if self.board.log == []:
 			# First move of the game
-			wordList = list(self.wordTree.getAllAnagrams(self.set, nLetters=7))
+			wordList = list(self.wordTree.getAllAnagrams(self.set, nLetters=[7]))
 			if wordList == []:
 				wordList = list(self.wordTree.getAllAnagrams(self.set))
 			wordList = list({w.asString() for w in wordList})
@@ -91,8 +92,16 @@ class Player(object):
 			for horizontal in [False, True]:
 				for x in range(15):
 					for y in range(15):
+						if self.board.tiles[x-1,y].letter!=None:
+							continue
+						if bestWord != None:
+							sys.stdout.write("best:"+str(bestWord.x)+","+str(bestWord.y)+": "+str(bestWord)+" ("+str(bestWordScore)+")  ((current "+str(x)+","+str(y)+"))    ")
+							sys.stdout.write("\r")
+							sys.stdout.flush()
+
 						constraintLetters=[]
 						constraintIndices=[]
+						nLettersPossible =[]
 						n=2
 						while n-len(constraintIndices)<8 and x+n<16:
 							if self.board.tiles[x+n-1,y].letter!=None:
@@ -105,20 +114,27 @@ class Player(object):
 								break
 							wObj = sb.Word(x,y, word='0'*n, horizontal=False)
 							if self.board.isValidMove(wObj):
-								words={w.asString() for w in self.wordTree.getAllAnagrams(self.set, nLetters=n, constraintIndices=constraintIndices, constraintLetters=constraintLetters)}
-								for w in words:
-									wordObj = sb.Word(x,y, horizontal=False, word=w)
-									wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board)) + 50*int((n-len(constraintLetters))==7)
-									if self.board.allWordsExist(wordObj) and wordScore > bestWordScore:
-										bestWordScore = wordScore
-										bestWord = wordObj
-										if horizontal:
-											bestWord = sb.Word(bestWord.y, bestWord.x, horizontal=True, word=str(bestWord))
-										sys.stdout.write("best:"+str(x)+","+str(y)+": "+str(bestWord)+" ("+str(bestWordScore)+")     ")
-										sys.stdout.write("\r")
-										sys.stdout.flush()
+								nLettersPossible.append(n)
 							n+=1
+						constraintIndices = np.where(np.array([self.board.tiles[i,y].letter for i in range(15)]) != None)[0]
+						constraintLetters = [self.board.tiles[i,y].letter for i in constraintIndices]
+						words={w.asString() for w in self.wordTree.getAllAnagrams(
+							self.set,
+							constraintIndices=constraintIndices-x,
+							constraintLetters=constraintLetters,
+							nLetters=nLettersPossible)}
+						for w in words:
+							if len(w) not in nLettersPossible:
+								continue
+							wordObj = sb.Word(x,y, horizontal=False, word=w)
+							wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board)) + 50*int(wordObj.numTrueLetters(self.board)==7)
+							if self.board.allWordsExist(wordObj) and wordScore > bestWordScore:
+								bestWordScore = wordScore
+								bestWord = wordObj
+								if horizontal:
+									bestWord = sb.Word(bestWord.y, bestWord.x, horizontal=True, word=str(bestWord))
 				self.board.tiles = self.board.tiles.transpose()
+			print()
 
 		if bestWord==None:
 			if len(self.board.setOfLetters) == 0:

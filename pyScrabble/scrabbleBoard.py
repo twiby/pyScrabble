@@ -39,8 +39,15 @@ class Word(object):
 		for letter in self.letters:
 			yield letter.x, letter.y, letter.c
 
-	def numLetter(self):
+	def numLetters(self):
 		return len(self.letters)
+
+	def numTrueLetters(self, board):
+		nTrueLetters = 0
+		for x,y,c in self.getLetters():
+			if board.tiles[x,y].letter == None:
+				nTrueLetters += 1
+		return nTrueLetters
 
 	def replaceJoker(self, set, board):
 		newWord = Word(self.letters[0].x, self.letters[0].y, horizontal=self.horizontal, word=str(self))
@@ -178,11 +185,14 @@ class Board(object):
 		if len([w for w in self.allWordsFormed(word)])>1:
 			return True
 		else:
+			playsAtLeastOneTile = False
 			usesExistingTile = False
 			for x,y,_ in word.getLetters():
-				if self.tiles[x,y].letter is not None:
+				if self.tiles[x,y].letter==None:
+					playsAtLeastOneTile = True
+				else:
 					usesExistingTile = True
-			if usesExistingTile:
+			if usesExistingTile and playsAtLeastOneTile:
 				return True
 			else:
 				return False

@@ -113,27 +113,29 @@ class TreeNode(object):
 
 	def getAllAnagrams(self, set, constraintLetters=[], constraintIndices=[], nLetters=None):
 		'''Mix between permutations algo and breadth-first tree search'''
+		if nLetters == []:
+			return
 		if self.isWord:
-			if nLetters==None or self.nLetters==nLetters:
-				yield self
-			if nLetters!=None and self.nLetters>=nLetters:
-				return
+			if nLetters==None or self.nLetters in nLetters:
+				if 0 in constraintIndices:
+					for x in range(len(constraintLetters)):
+						if constraintIndices[x]==0:
+							node = self.getNextBranch(constraintLetters[x])
+							break
+					if node!=None and node.isWord:
+						yield node
+					else:
+						return
+				else:
+					yield self
+		if nLetters!=None and self.nLetters>=max(nLetters):
+			return
 		setList = list(set)
 		constraintLetters = list(constraintLetters)
 		constraintIndices = np.array(constraintIndices)
 		if len(constraintIndices) != len(constraintLetters):
 			raise ValueError("constraint on indices and letters must be equals")
-
-		if len(setList)==0:
-			if 0 in constraintIndices:
-				for x in range(len(constraintLetters)):
-					if constraintIndices[x]==0:
-						node = self.getNextBranch(constraintLetters[x])
-						break
-				if node!=None and node.isWord:
-					yield node
-				else:
-					return
+			
 
 		for idx in range(len(setList)):
 			if 0 in constraintIndices:
