@@ -74,9 +74,9 @@ class Player(object):
 		bestWordScore = 0
 		if self.board.log == []:
 			# First move of the game
-			wordList = list(self.wordTree.getAllAnagrams(self.set))
+			wordList = list(self.wordTree.getAllAnagrams(self.set, nLetters=7))
 			if wordList == []:
-				wordList = list(self.wordTree.getWordsFrom(self.set))
+				wordList = list(self.wordTree.getAllAnagrams(self.set))
 			wordList = list({w.asString() for w in wordList})
 			for w in wordList:
 				for y in range(8-len(w), 8):
@@ -105,7 +105,7 @@ class Player(object):
 								break
 							wObj = sb.Word(x,y, word='0'*n, horizontal=False)
 							if self.board.isValidMove(wObj):
-								words={w.asString() for w in self.wordTree.getWordsFrom(self.set, nLetters=n, constraintIndices=constraintIndices, constraintLetters=constraintLetters)}
+								words={w.asString() for w in self.wordTree.getAllAnagrams(self.set, nLetters=n, constraintIndices=constraintIndices, constraintLetters=constraintLetters)}
 								for w in words:
 									wordObj = sb.Word(x,y, horizontal=False, word=w)
 									wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board)) + 50*int((n-len(constraintLetters))==7)

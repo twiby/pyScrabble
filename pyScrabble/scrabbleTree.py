@@ -50,6 +50,7 @@ class TreeNode(object):
 		self.isWord = isWord
 		self.children = []
 		self.parent = None
+		self.nLetters = 0
 
 	def getRoot(self):
 		node = self
@@ -61,6 +62,7 @@ class TreeNode(object):
 	def addChild(self, child):
 		idx = bisect_left(KeyifyList(self.children, lambda c: c.data), child.data)
 		child.parent = self
+		child.nLetters = self.nLetters+1
 		self.children.insert(idx, child)
 	def addNewChild(self, *args, **kwargs):
 		temp = TreeNode(*args, **kwargs)
@@ -109,8 +111,13 @@ class TreeNode(object):
 			for idx in range(len(myList)):
 				yield from self.getAllPermutations(myList[:idx]+myList[idx+1:], prefix=prefix+[myList[idx]])
 
-	def getAllAnagrams(self, set, constraintLetters=[], constraintIndices=[]):
+	def getAllAnagrams(self, set, constraintLetters=[], constraintIndices=[], nLetters=None):
 		'''Mix between permutations algo and breadth-first tree search'''
+		if self.isWord:
+			if nLetters==None or self.nLetters==nLetters:
+				yield self
+			if nLetters!=None and self.nLetters>=nLetters:
+				return
 		setList = list(set)
 		constraintLetters = list(constraintLetters)
 		constraintIndices = np.array(constraintIndices)
@@ -127,11 +134,6 @@ class TreeNode(object):
 					yield node
 				else:
 					return
-			else:
-				if self.isWord:
-					yield self
-				else:
-					return
 
 		for idx in range(len(setList)):
 			if 0 in constraintIndices:
@@ -142,43 +144,16 @@ class TreeNode(object):
 				if node==None:
 					return
 				else:
-					yield from node.getAllAnagrams(setList, constraintLetters=constraintLetters, constraintIndices=constraintIndices-1)
+					yield from node.getAllAnagrams(setList, constraintLetters=constraintLetters, constraintIndices=constraintIndices-1, nLetters=nLetters)
 			elif setList[idx]=="0":
 				for child in self.children:
-					yield from child.getAllAnagrams(setList[:idx]+setList[idx+1:], constraintLetters=constraintLetters, constraintIndices=constraintIndices-1)
+					yield from child.getAllAnagrams(setList[:idx]+setList[idx+1:], constraintLetters=constraintLetters, constraintIndices=constraintIndices-1, nLetters=nLetters)
 			else:
 				node = self.getNextBranch(setList[idx])
 				if node==None:
 					continue
-				yield from node.getAllAnagrams(setList[:idx]+setList[idx+1:], constraintLetters=constraintLetters, constraintIndices=constraintIndices-1)
+				yield from node.getAllAnagrams(setList[:idx]+setList[idx+1:], constraintLetters=constraintLetters, constraintIndices=constraintIndices-1, nLetters=nLetters)
 
-	def getSubsetIndices(self, nLettersTotal, nLettersToTake, currentIndices=[]):
-		'''take nLettersToTake among nLettersTotal, as indices, 
-			without repetition or permutation'''
-		if nLettersToTake >= nLettersTotal:
-			yield [n for n in range(nLettersTotal)]
-			return
-		if len(currentIndices)==nLettersToTake:
-			yield currentIndices
-			return
-		min = 0 if len(currentIndices)==0 else currentIndices[-1]+1
-		for idx in range(min, nLettersTotal):
-			yield from self.getSubsetIndices(nLettersTotal, nLettersToTake, currentIndices=currentIndices+[idx])
-
-	def getSubset(self, set, nLetters):
-		'''generates sets of nLetters taken from set'''
-		for indices in self.getSubsetIndices(len(set), nLetters):
-			yield ''.join([set[n] for n in indices])
-
-	def getWordsFrom(self, set, *args, nLetters=None, **kwargs):
-		'''Return all playable words with letters from set'''
-		if nLetters != None:
-			for subset in self.getSubset(set, nLetters):
-				yield from self.getAllAnagrams(subset, *args, **kwargs)
-		else:
-			for nLetters in range(2, len(set)+1):
-				for subset in self.getSubset(set, nLetters):
-					yield from self.getAllAnagrams(subset, *args, **kwargs)
 
 	### End of scrabble methods ###
 
