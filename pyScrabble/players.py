@@ -23,12 +23,18 @@ class Players(object):
 	def __init__(self, board, nPlayers=1):
 		self.board = board
 		self.wordTree = ps.loadTree(folder + "scrabble.tree")
-		self.players = [Player(board, self.wordTree) for _ in range(nPlayers)]
+		self.players = [Player(board, self.wordTree, name="player "+str(n+1)) for n in range(nPlayers)]
 		self.finisher = None
 
 	def playOneTurn(self):
 		for player in self.players:
 			player.playOneTurn()
+			if len(player.set)==0:
+				break
+
+	def pickLetters(self):
+		for pl in self.players:
+			pl.updateSet()
 
 	def done(self):
 		for p in self.players:
@@ -41,28 +47,28 @@ class Players(object):
 		return True
 
 class Player(object):
-	def __init__(self, board, wordTree):
+	def __init__(self, board, wordTree, name=""):
 		self.board = board
 		self.score = 0
 		self.set = []
 		self.wordTree = wordTree
 		self.done = False
-		self.updateSet()
+		self.name = name
 
 	def updateSet(self):
 		self.set += self.board.getNewLetters(7-len(self.set))
 
 	def getStatus(self):
-		status = ''
+		status = self.name + " "
 		status += str(self.set)
 		status += ' current score: '
 		status += str(self.score)
 		return status
 
-	def playOneTurn(self):
+	def findBestWord(self):
 		bestWord = None
 		bestWordScore = 0
-		if self.board.log == []:
+		if self.board.isEmpty():
 			# First move of the game
 			wordList = list(self.wordTree.getAllAnagrams(self.set, nLetters=[7]))
 			if wordList == []:
@@ -121,6 +127,10 @@ class Player(object):
 									bestWord = sb.Word(bestWord.y, bestWord.x, horizontal=True, word=str(bestWord))
 				self.board.tiles = self.board.tiles.transpose()
 			print()
+		return bestWord
+
+	def playOneTurn(self):
+		bestWord = self.findBestWord()
 
 		if bestWord==None:
 			if len(self.board.setOfLetters) == 0:
@@ -131,3 +141,4 @@ class Player(object):
 		else:
 			self.score += self.board.play(bestWord, self.set)
 			self.updateSet()
+		

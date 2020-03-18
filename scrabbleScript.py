@@ -1,25 +1,33 @@
 import os
 import sys
-from random import shuffle
+import argparse
 
 import pyScrabble.scrabbleBoard as sb
 
+parser = argparse.ArgumentParser(description="Automatons to play scrabble")
+parser.add_argument('--players', type=int, help="number of players")
+parser.add_argument('--scrabbleStats', action='store_true', help="makes stats about probability of having a scrabble")
+parser.add_argument('--auto', action='store_true', help="launches a game with automatic players")
 
-board = sb.Board()
-board.start()
+args = parser.parse_args()
 
-# nTot = 10000
-# scrabbleFound = 0
-# for n in range(nTot):
-# 	sys.stdout.write(str(n))
-# 	sys.stdout.write('\r')
-# 	sys.stdout.flush()
-# 	temp = {w for w in board.players.wordTree.getAllAnagrams(board.setOfLetters[:7])}
-# 	if temp == set():
-# 		pass
-# 	else:
-# 		scrabbleFound += 1
-# 	shuffle(board.setOfLetters)
+if args.scrabbleStats:
+	sb.computeScrabbleStats()
+	sys.exit(0)
 
-# print("found a scrabble possible",scrabbleFound,"out of",nTot)
-# print("whch is like",scrabbleFound/nTot*100,"%")
+if args.players:
+	nPlayers = args.players
+else:
+	nPlayers = 1
+
+if args.auto:
+	board = sb.Board(nPlayers=nPlayers)
+	board.startAutomaton()
+	sys.exit(0)
+
+else:
+	import pyScrabble.interface as i
+	board = sb.Board()
+	board = i.getScrabbleBoard(board)
+	board.startAdviser()
+

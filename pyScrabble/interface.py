@@ -1,0 +1,82 @@
+import pyScrabble.scrabbleBoard as sb
+import sys,tty,termios
+class _Getch:       
+	def __call__(self):
+		fd = sys.stdin.fileno()
+		old_settings = termios.tcgetattr(fd)
+		try:
+			tty.setraw(sys.stdin.fileno())
+			ch = sys.stdin.read(1)
+		finally:
+			termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+		return ch
+
+def getSingleInput():
+	inkey = _Getch()
+	for _ in range(6):
+		while(1):
+			k=inkey()
+			if k!='':
+				break
+		print(ord(k[0]))
+
+def getInput():
+	inkey = _Getch()
+	escapeSignal=''
+	escapeSignalLength=0
+	while(1):
+		k=inkey()
+		if k!='' and k!='\x1b' and escapeSignalLength==0:
+			break
+		else:
+			escapeSignal+=k
+			escapeSignalLength+=1
+			if escapeSignalLength==3:
+				k=escapeSignal
+				break
+	return k
+
+def getScrabbleBoard(board):
+	print("Enter current board")
+	for x in range(15):
+		for y in range(15):
+			sys.stdout.write('_ ')
+		sys.stdout.write('\n')
+		sys.stdout.flush()
+	sys.stdout.write("\033[A")
+	sys.stdout.flush()
+	x=14; y=0
+
+	while(1):
+		k = getInput()
+		if k=='\x1b[A':
+			if x!=0:
+				x-=1
+				sys.stdout.write("\033[A")
+		elif k=='\x1b[B':
+			if x!=14:
+				x+=1
+				sys.stdout.write("\033[B")
+		elif k=='\x1b[C':
+			if y!=14:
+				y+=1
+				sys.stdout.write("\033[C\033[C")
+		elif k=='\x1b[D':
+			if y!=0:
+				y-=1
+				sys.stdout.write("\033[D\033[D")
+		elif k=='\r':
+			break
+		elif k=="\x7f":
+			board.tiles[x,y].letter=None
+			sys.stdout.write("_"+"\033[D")
+		else:
+			board.tiles[x,y].letter=k
+			sys.stdout.write(k+"\033[D")
+		sys.stdout.flush()
+	for _ in range(15-x):
+		print()
+	if not board.checkAllWords():
+		print("not all words are valid.")
+
+	return board

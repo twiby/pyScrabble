@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 from random import shuffle
 from pyScrabble import constants
@@ -8,6 +9,23 @@ class TileError(Exception):
 class WordError(Exception):
 	pass
 
+def computeScrabbleStats(nTot=10000):
+	from random import shuffle
+	board = Board()
+	scrabbleFound = 0
+	for n in range(nTot):
+		sys.stdout.write(str(n))
+		sys.stdout.write('\r')
+		sys.stdout.flush()
+		temp = {w for w in board.players.wordTree.getAllAnagrams(board.setOfLetters[:7], nLetters=[7])}
+		if temp == set():
+			pass
+		else:
+			scrabbleFound += 1
+		shuffle(board.setOfLetters)
+
+	print("found a scrabble possible",scrabbleFound,"out of",nTot)
+	print("whch is like",scrabbleFound/nTot*100,"%")
 
 class Word(object):
 	class Letter(object):
@@ -120,7 +138,16 @@ class Board(object):
 		self.log = []
 		self.players = pl.Players(self, nPlayers)
 
-	def start(self):
+	def startAdviser(self):
+		self.players.players[0].set = list(input("Enter your set of letters: "))
+		bestWord = self.players.players[0].findBestWord()
+
+	def startAutomaton(self):
+		for x in range(15):
+			for y in range(15):
+				if self.tiles[x,y].letter != None:
+					self.setOfLetters.remove(self.tiles[x,y].letter)
+		self.players.pickLetters()
 		while not self.players.done():
 			self.print()
 			self.playOneTurn()
@@ -132,6 +159,7 @@ class Board(object):
 				bonus += temp
 			self.players.finisher.score += bonus
 		self.print()
+		print('total score : ',sum([pl.score for pl in self.players.players]))
 	
 	def playOneTurn(self):
 		self.players.playOneTurn()
@@ -144,6 +172,31 @@ class Board(object):
 		for player in self.players.players:
 			print(player.getStatus())
 		print('lettres left:',len(self.setOfLetters))
+
+	def isEmpty(self):
+		for x in range(15):
+			for y in range(15):
+				if self.tiles[x,y].letter!=None:
+					return False
+		return True
+
+	def getAllWords(self):
+		for _ in range(2):
+			for x in range(15):
+				for y in range(15):
+					if self.tiles[x,y].letter!=None:
+						if (x==14 or self.tiles[x+1,y].letter!=None) and (x==0 or self.tiles[x-1,y].letter==None):
+							i=x; word='';
+							while x<14 and self.tiles[i,y].letter!=None:
+								word += self.tiles[i,y].letter
+								i+=1
+							yield word
+			self.tiles = self.tiles.transpose()
+	def checkAllWords(self):
+		for word in self.getAllWords():
+			if self.players.wordTree.getWord(word)==None:
+				return False
+		return True
 
 	def allWordsFormed(self, word):
 		yield word
