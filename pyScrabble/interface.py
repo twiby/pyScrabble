@@ -40,7 +40,10 @@ def getScrabbleBoard(board):
 	print("Enter current board")
 	for x in range(15):
 		for y in range(15):
-			sys.stdout.write('_ ')
+			if board.tiles[x,y].letter==None:
+				sys.stdout.write('_ ')
+			else:
+				sys.stdout.write(board.tiles[x,y].letter+' ')
 		sys.stdout.write('\n')
 		sys.stdout.flush()
 	sys.stdout.write("\033[A")
@@ -78,5 +81,11 @@ def getScrabbleBoard(board):
 		print()
 	if not board.checkAllWords():
 		print("not all words are valid.")
+
+	for x in range(15):
+		for y in range(15):
+			if board.tiles[x,y].letter!=None:
+				board.tiles[x,y].wordFactor=1
+				board.tiles[x,y].letterFactor=1
 
 	return board

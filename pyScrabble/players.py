@@ -65,7 +65,7 @@ class Player(object):
 		status += str(self.score)
 		return status
 
-	def findBestWord(self):
+	def findBestWord(self, printResult=False):
 		bestWord = None
 		bestWordScore = 0
 		if self.board.isEmpty():
@@ -126,7 +126,11 @@ class Player(object):
 								if horizontal:
 									bestWord = sb.Word(bestWord.y, bestWord.x, horizontal=True, word=str(bestWord))
 				self.board.tiles = self.board.tiles.transpose()
-			print()
+
+		if printResult and bestWord:
+			print("best word : "+str(bestWord)+" at ("+str(bestWord.x)+","+str(bestWord.y)+") for "+str(bestWordScore)+" points")
+		elif printResult:
+			print("no word found.")
 		return bestWord
 
 	def playOneTurn(self):

@@ -27,6 +27,17 @@ def computeScrabbleStats(nTot=10000):
 	print("found a scrabble possible",scrabbleFound,"out of",nTot)
 	print("whch is like",scrabbleFound/nTot*100,"%")
 
+def askYesNo(text):
+	answer = None
+	while answer not in ("y", "n"):
+		answer = input(text+" [y/n]: ")
+		if answer == "y":
+			return True
+		elif answer == "n":
+			return False
+		else:
+			print("Please enter yes or no.")
+
 class Word(object):
 	class Letter(object):
 		def __init__(self,x,y,c):
@@ -139,8 +150,16 @@ class Board(object):
 		self.players = pl.Players(self, nPlayers)
 
 	def startAdviser(self):
-		self.players.players[0].set = list(input("Enter your set of letters: "))
-		bestWord = self.players.players[0].findBestWord()
+		import pyScrabble.interface as i
+		playing = True
+		while playing:
+			self = i.getScrabbleBoard(self)
+			self.players.players[0].set = list(input("Enter your set of letters: "))
+			bestWord = self.players.players[0].findBestWord(printResult=True)
+			playing = askYesNo("Continue ?")
+			if bestWord!=None:
+				self.play(bestWord, self.players.players[0].set)
+
 
 	def startAutomaton(self):
 		for x in range(15):
@@ -187,16 +206,20 @@ class Board(object):
 					if self.tiles[x,y].letter!=None:
 						if (x==14 or self.tiles[x+1,y].letter!=None) and (x==0 or self.tiles[x-1,y].letter==None):
 							i=x; word='';
-							while x<14 and self.tiles[i,y].letter!=None:
+							while i<15 and self.tiles[i,y].letter!=None:
 								word += self.tiles[i,y].letter
 								i+=1
 							yield word
 			self.tiles = self.tiles.transpose()
 	def checkAllWords(self):
+		allWordsValid = True
 		for word in self.getAllWords():
+			if len(word)==1:
+				continue
 			if self.players.wordTree.getWord(word)==None:
-				return False
-		return True
+				print("not valid:",word)
+				allWordsValid = False
+		return allWordsValid
 
 	def allWordsFormed(self, word):
 		yield word
@@ -226,7 +249,7 @@ class Board(object):
 		return True
 
 	def isValidMove(self, word):
-		if len(self.log)==0: # First move must pass through middle
+		if self.isEmpty(): # First move must pass through middle
 			passThroughMiddle = False
 			for x,y,_ in word.getLetters():
 				if x==7 and y==7:

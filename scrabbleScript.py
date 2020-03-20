@@ -26,8 +26,6 @@ if args.auto:
 	sys.exit(0)
 
 else:
-	import pyScrabble.interface as i
 	board = sb.Board()
-	board = i.getScrabbleBoard(board)
 	board.startAdviser()
 
