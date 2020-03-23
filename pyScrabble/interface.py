@@ -1,6 +1,10 @@
 import pyScrabble.scrabbleBoard as sb
 import pyScrabble.constants as c
 import sys,tty,termios
+
+wordFactorColors   = dict(((1,''),(2,'\033[33m'),(3,'\033[31m')))
+letterFactorColors = dict(((1,''),(2,'\033[36m'),(3,'\033[34m')))
+
 class _Getch:       
 	def __call__(self):
 		fd = sys.stdin.fileno()
@@ -40,12 +44,15 @@ def getInput():
 def getScrabbleBoard(board):
 	print("Enter current board")
 	for x in range(15):
+		str = ''
 		for y in range(15):
+			str += wordFactorColors[board.tiles[x,y].wordFactor] + letterFactorColors[board.tiles[x,y].letterFactor]
 			if board.tiles[x,y].letter==None:
-				sys.stdout.write('_ ')
+				str += '_ '
 			else:
-				sys.stdout.write(board.tiles[x,y].letter+' ')
-		sys.stdout.write('\n')
+				str += board.tiles[x,y].letter+' '
+			str += '\033[0m'
+		sys.stdout.write(str+'\n')
 		sys.stdout.flush()
 	sys.stdout.write("\033[A")
 	sys.stdout.flush()
@@ -73,9 +80,13 @@ def getScrabbleBoard(board):
 			break
 		elif k=="\x7f":
 			board.tiles[x,y].letter=None
-			sys.stdout.write("_"+"\033[D")
+			board.tiles[x,y].wordFactor = c.wordFactorGrid[x,y]
+			board.tiles[x,y].letterFactor = c.letterFactorGrid[x,y]
+			sys.stdout.write(wordFactorColors[c.wordFactorGrid[x,y]]+letterFactorColors[c.letterFactorGrid[x,y]]+"_"+"\033[0m"+"\033[D")
 		else:
 			board.tiles[x,y].letter=k
+			board.tiles[x,y].wordFactor = 1
+			board.tiles[x,y].letterFactor = 1
 			sys.stdout.write(k+"\033[D")
 		sys.stdout.flush()
 	for _ in range(15-x):
@@ -83,13 +94,13 @@ def getScrabbleBoard(board):
 	if not board.checkAllWords():
 		print("not all words are valid.")
 
-	for x in range(15):
-		for y in range(15):
-			if board.tiles[x,y].letter==None:
-				board.tiles[x,y].wordFactor==c.wordFactorGrid[x,y]
-				board.tiles[x,y].letterFactor==c.letterFactorGrid[x,y]
-			else:
-				board.tiles[x,y].wordFactor=1
-				board.tiles[x,y].letterFactor=1
+	# for x in range(15):
+	# 	for y in range(15):
+	# 		if board.tiles[x,y].letter==None:
+	# 			board.tiles[x,y].wordFactor=c.wordFactorGrid[x,y]
+	# 			board.tiles[x,y].letterFactor=c.letterFactorGrid[x,y]
+	# 		else:
+	# 			board.tiles[x,y].wordFactor=1
+	# 			board.tiles[x,y].letterFactor=1
 
 	return board
