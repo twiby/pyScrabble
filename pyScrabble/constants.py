@@ -1,6 +1,6 @@
 import numpy as np
 
-wordFactorGrid = np.array([
+wordFactorGrid = np.pad(np.array([
 	[3, 1, 1, 1, 1, 1, 1, 3],
 	[1, 2, 1, 1, 1, 1, 1, 1],
 	[1, 1, 2, 1, 1, 1, 1, 1],
@@ -8,8 +8,8 @@ wordFactorGrid = np.array([
 	[1, 1, 1, 1, 2, 1, 1, 1],
 	[1, 1, 1, 1, 1, 1, 1, 1],
 	[1, 1, 1, 1, 1, 1, 1, 1],
-	[3, 1, 1, 1, 1, 1, 1, 2]])
-letterFactorGrid = np.array([
+	[3, 1, 1, 1, 1, 1, 1, 2]]), ((0,7),(0,7)), 'reflect')
+letterFactorGrid = np.pad(np.array([
 	[1, 1, 1, 2, 1, 1, 1, 1],
 	[1, 1, 1, 1, 1, 3, 1, 1],
 	[1, 1, 1, 1, 1, 1, 2, 1],
@@ -17,7 +17,7 @@ letterFactorGrid = np.array([
 	[1, 1, 1, 1, 1, 1, 1, 1],
 	[1, 3, 1, 1, 1, 3, 1, 1],
 	[1, 1, 2, 1, 1, 1, 2, 1],
-	[1, 1, 1, 2, 1, 1, 1, 1]])
+	[1, 1, 1, 2, 1, 1, 1, 1]]), ((0,7),(0,7)), 'reflect')
 
 setOfLetters = \
 	["a"]*9 + \

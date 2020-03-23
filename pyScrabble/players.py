@@ -131,6 +131,8 @@ class Player(object):
 			print("best word : "+str(bestWord)+" at ("+str(bestWord.x)+","+str(bestWord.y)+") for "+str(bestWordScore)+" points")
 		elif printResult:
 			print("no word found.")
+		else:
+			print()
 		return bestWord
 
 	def playOneTurn(self):

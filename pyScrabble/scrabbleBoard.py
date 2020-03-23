@@ -140,8 +140,8 @@ class Board(object):
 				return True
 
 	def __init__(self, nPlayers=1):
-		wordFactorGrid = np.pad(constants.wordFactorGrid, ((0, 7),(0, 7)), 'reflect')
-		letterFactorGrid = np.pad(constants.letterFactorGrid, ((0, 7),(0, 7)), 'reflect')
+		wordFactorGrid = constants.wordFactorGrid.copy()
+		letterFactorGrid = constants.letterFactorGrid.copy()
 		self.tiles = np.array([[self.Tile(wordFactorGrid[x,y], letterFactorGrid[x,y]) for x in range(15)] for y in range(15)], dtype=object)
 		self.setOfLetters = constants.setOfLetters
 		shuffle(self.setOfLetters)
