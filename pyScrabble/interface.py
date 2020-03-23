@@ -94,13 +94,4 @@ def getScrabbleBoard(board):
 	if not board.checkAllWords():
 		print("not all words are valid.")
 
-	# for x in range(15):
-	# 	for y in range(15):
-	# 		if board.tiles[x,y].letter==None:
-	# 			board.tiles[x,y].wordFactor=c.wordFactorGrid[x,y]
-	# 			board.tiles[x,y].letterFactor=c.letterFactorGrid[x,y]
-	# 		else:
-	# 			board.tiles[x,y].wordFactor=1
-	# 			board.tiles[x,y].letterFactor=1
-
 	return board
