@@ -23,6 +23,7 @@ class Players(object):
 	def __init__(self, board, nPlayers=1):
 		self.board = board
 		self.wordTree = ps.loadTree(folder + "scrabble.tree")
+		self.wordTree.addWord("ud")
 		self.players = [Player(board, self.wordTree, name="player "+str(n+1)) for n in range(nPlayers)]
 		self.finisher = None
 
@@ -88,7 +89,7 @@ class Player(object):
 					for y in range(15):
 						if x!=0 and self.board.tiles[x-1,y].letter!=None:
 							continue
-						if bestWord != None:
+						if printResult and bestWord != None:
 							sys.stdout.write("best:"+str(bestWord.x)+","+str(bestWord.y)+": "+str(bestWord)+" ("+str(bestWordScore)+")  ((current "+str(x)+","+str(y)+"))    ")
 							sys.stdout.write("\r")
 							sys.stdout.flush()
@@ -108,17 +109,11 @@ class Player(object):
 							if self.board.isValidMove(wObj):
 								nLettersPossible.append(n)
 							n+=1
-						# if horizontal==True and x==0 and y==13:
-						# 	print(nLettersPossible)
-						# 	self.board.tiles = self.board.tiles.transpose()
-						# 	return None
-						constraintIndices = np.where(np.array([self.board.tiles[i,y].letter for i in range(15)]) != None)[0]
-						constraintLetters = [self.board.tiles[i,y].letter for i in constraintIndices]
+						
 						words={w.asString() for w in self.wordTree.getAllAnagrams(
 							self.set,
-							constraintIndices=constraintIndices-x,
-							constraintLetters=constraintLetters,
-							nLetters=nLettersPossible)}
+							nLetters=nLettersPossible,
+							**self.getConstraints(x,y))}
 						for w in words:
 							wordObj = sb.Word(x,y, horizontal=False, word=w)
 							wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board))
@@ -128,9 +123,9 @@ class Player(object):
 								if horizontal:
 									bestWord = sb.Word(bestWord.y, bestWord.x, horizontal=True, word=str(bestWord))
 				self.board.tiles = self.board.tiles.transpose()
-
+		
 		if printResult and bestWord:
-			print("best word : "+str(bestWord)+" at ("+str(bestWord.x)+","+str(bestWord.y)+") for "+str(bestWordScore)+" points")
+			print("best word : "+str(bestWord)+" at ("+str(bestWord.x)+","+str(bestWord.y)+") horizontal:"+str(bestWord.horizontal)+" for "+str(bestWordScore)+" points")
 		elif printResult:
 			print("no word found.")
 		else:
@@ -138,7 +133,7 @@ class Player(object):
 		return bestWord
 
 	def playOneTurn(self):
-		bestWord = self.findBestWord()
+		bestWord = self.findBestWord(printResult=True)
 
 		if bestWord==None:
 			if len(self.board.setOfLetters) == 0:
@@ -149,4 +144,13 @@ class Player(object):
 		else:
 			self.score += self.board.play(bestWord, self.set)
 			self.updateSet()
-		
+	
+	def getConstraints(self, x, y, horizontal=False):
+		if horizontal:
+			x,y = y,x
+			self.board.tiles = self.board.tiles.transpose()
+		indices = np.where(np.array([self.board.tiles[i,y].letter for i in range(15)]) != None)[0]
+		letters = [self.board.tiles[i,y].letter for i in indices]
+		if horizontal:
+			self.board.tiles = self.board.tiles.transpose()
+		return {"constraintIndices": indices-x, "constraintLetters": letters}

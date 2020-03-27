@@ -295,6 +295,7 @@ class Board(object):
 			except TileError:
 				self.print()
 				print("Error while playing",word,"at",word.x,word.y,"horizontal",word.horizontal)
+				raise
 		self.log.append(word)
 		return score
 

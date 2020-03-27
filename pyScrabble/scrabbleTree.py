@@ -121,6 +121,7 @@ class TreeNode(object):
 				return
 			else:
 				yield from node.getAllAnagrams(setList, constraintLetters=constraintLetters, constraintIndices=constraintIndices-1, nLetters=nLetters)
+				return
 
 		if self.isWord:
 			if nLetters==None or self.nLetters in nLetters:
