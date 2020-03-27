@@ -3,11 +3,11 @@ a utility for scrabble.
 
 The main.py will download words and create our custom data structures, saving them both to files, if they are missing. 
 Default usage is an interface where you can fill in the board and your letters and it gives you the best play.
-Auto usage, for testing and fun, is (for 3 players for example)
+Auto usage, for testing and fun, is
 ```
-python main.py --auto --players 3
+python main.py --auto
 ```
-Only restriction : words with more than 3 constraints are not tried.
+
 
 
 # Personalisation

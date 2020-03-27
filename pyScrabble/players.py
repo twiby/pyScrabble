@@ -86,7 +86,7 @@ class Player(object):
 			for horizontal in [False, True]:
 				for x in range(15):
 					for y in range(15):
-						if self.board.tiles[x-1,y].letter!=None:
+						if x!=0 and self.board.tiles[x-1,y].letter!=None:
 							continue
 						if bestWord != None:
 							sys.stdout.write("best:"+str(bestWord.x)+","+str(bestWord.y)+": "+str(bestWord)+" ("+str(bestWordScore)+")  ((current "+str(x)+","+str(y)+"))    ")
@@ -104,12 +104,14 @@ class Player(object):
 							elif x+n>=15 or self.board.tiles[x+n,y].letter!=None:
 								n+=1
 								continue
-							if len(constraintIndices)>3:
-								break
 							wObj = sb.Word(x,y, word='0'*n, horizontal=False)
 							if self.board.isValidMove(wObj):
 								nLettersPossible.append(n)
 							n+=1
+						# if horizontal==True and x==0 and y==13:
+						# 	print(nLettersPossible)
+						# 	self.board.tiles = self.board.tiles.transpose()
+						# 	return None
 						constraintIndices = np.where(np.array([self.board.tiles[i,y].letter for i in range(15)]) != None)[0]
 						constraintLetters = [self.board.tiles[i,y].letter for i in constraintIndices]
 						words={w.asString() for w in self.wordTree.getAllAnagrams(

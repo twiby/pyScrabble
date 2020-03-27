@@ -4,12 +4,24 @@
 		"selected_items":
 		[
 			[
-				"lett",
-				"letterFactor"
-			],
-			[
 				"letter",
 				"letterFactorGrid"
+			],
+			[
+				"wordF",
+				"wordFactorColors"
+			],
+			[
+				"letterF",
+				"letterFactorGrid"
+			],
+			[
+				"word",
+				"wordFactorGrid"
+			],
+			[
+				"lett",
+				"letterFactor"
 			],
 			[
 				"letterFactor",
@@ -54,14 +66,6 @@
 			[
 				"set",
 				"set"
-			],
-			[
-				"word",
-				"wordIncludingJoker"
-			],
-			[
-				"wordF",
-				"wordFactor"
 			],
 			[
 				"scra",
@@ -510,10 +514,6 @@
 			[
 				"changeFilt",
 				"changeFilterChannel"
-			],
-			[
-				"highpassFilter",
-				"highpassFilterMode"
 			]
 		]
 	},
@@ -532,8 +532,16 @@
 			"file": "pyScrabble/interface.py",
 			"settings":
 			{
-				"buffer_size": 2003,
+				"buffer_size": 2264,
 				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "main.py",
+			"settings":
+			{
+				"buffer_size": 804,
 				"line_ending": "Unix"
 			}
 		},
@@ -612,6 +620,8 @@
 	],
 	"file_history":
 	[
+		"/home/thibault/pyScrabble/README.md",
+		"/home/thibault/pyScrabble/requirements.txt",
 		"/home/thibault/pyScrabble/scrabbleScript.py",
 		"/home/thibault/pyScrabble/pyScrabble.sublime-project",
 		"/home/thibault/pyScrabble/pyScrabble/interface.py",
@@ -802,7 +812,7 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 4,
 			"sheets":
 			[
 				{
@@ -818,8 +828,8 @@
 						"selection":
 						[
 							[
-								0,
-								0
+								217,
+								217
 							]
 						],
 						"settings":
@@ -828,7 +838,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2477.0,
+						"translation.y": 1782.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 4,
@@ -840,15 +850,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2003,
+						"buffer_size": 2264,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1613,
-								1613
+								2248,
+								2248
 							]
 						],
 						"settings":
@@ -857,14 +867,43 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 928.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
+					"file": "main.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 804,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								117,
+								117
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
 					"file": "pyScrabble/scrabbleBoard.py",
 					"semi_transient": false,
 					"settings":
@@ -876,8 +915,8 @@
 						"selection":
 						[
 							[
-								3995,
-								3995
+								2184,
+								2184
 							]
 						],
 						"settings":
@@ -886,14 +925,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2373.0,
+						"translation.y": 1100.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 4,
 					"file": "pyScrabble/players.py",
 					"semi_transient": false,
 					"settings":
@@ -905,8 +944,8 @@
 						"selection":
 						[
 							[
-								4055,
-								4055
+								2999,
+								2999
 							]
 						],
 						"settings":
@@ -915,14 +954,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1645.0,
+						"translation.y": 1512.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 5,
 					"file": "pyScrabble/constants.py",
 					"semi_transient": false,
 					"settings":
@@ -947,7 +986,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 5,
 					"type": "text"
 				}
 			]
