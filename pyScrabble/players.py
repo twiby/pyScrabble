@@ -24,6 +24,7 @@ class Players(object):
 		self.board = board
 		self.wordTree = ps.loadTree(folder + "scrabble.tree")
 		self.wordTree.addWord("ud")
+		self.wordTree.addWord("woh")
 		self.players = [Player(board, self.wordTree, name="player "+str(n+1)) for n in range(nPlayers)]
 		self.finisher = None
 
@@ -46,6 +47,10 @@ class Players(object):
 			if not p.done:
 				return False
 		return True
+
+	def addWords(self, words):
+		for word in words:
+			self.wordTree.addWord(word)
 
 class Player(object):
 	def __init__(self, board, wordTree, name=""):
@@ -94,21 +99,21 @@ class Player(object):
 							sys.stdout.write("\r")
 							sys.stdout.flush()
 
-						constraintLetters=[]
-						constraintIndices=[]
-						nLettersPossible =[]
-						n=2
-						while n-len(constraintIndices)<8 and x+n<16:
-							if self.board.tiles[x+n-1,y].letter!=None:
-								constraintLetters.append(self.board.tiles[x+n-1,y].letter)
-								constraintIndices.append(n-1)
-							elif x+n>=15 or self.board.tiles[x+n,y].letter!=None:
-								n+=1
+						n = 2
+						nConstraints = 0
+						nLettersPossible = []
+						while n-nConstraints<8:
+							if x+n<15 and self.board.tiles[x+n,y].letter!=None:
+								n += 1
+								nConstraints += 1
 								continue
-							wObj = sb.Word(x,y, word='0'*n, horizontal=False)
+							try:
+								wObj = sb.Word(x,y, word='0'*n, horizontal=False)
+							except sb.WordError:
+								break
 							if self.board.isValidMove(wObj):
 								nLettersPossible.append(n)
-							n+=1
+							n += 1
 						
 						words={w.asString() for w in self.wordTree.getAllAnagrams(
 							self.set,
@@ -133,7 +138,7 @@ class Player(object):
 		return bestWord
 
 	def playOneTurn(self):
-		bestWord = self.findBestWord(printResult=True)
+		bestWord = self.findBestWord()
 
 		if bestWord==None:
 			if len(self.board.setOfLetters) == 0:

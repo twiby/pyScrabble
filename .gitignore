@@ -1,5 +1,4 @@
 pyScrabble.sublime-workspace
-scrabble.tree
-scrabble.tree_old
-scrabbleWords.txt
+scrabble.tree*
+scrabbleWords*
 __pycache__

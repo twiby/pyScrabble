@@ -211,6 +211,7 @@ class Board(object):
 								i+=1
 							yield word
 			self.tiles = self.tiles.transpose()
+			
 	def checkAllWords(self):
 		allWordsValid = True
 		for word in self.getAllWords():
@@ -220,6 +221,16 @@ class Board(object):
 				print("not valid:",word)
 				allWordsValid = False
 		return allWordsValid
+
+	def invalidWords(self):
+		unexpectedWords = []
+		for word in self.getAllWords():
+			if len(word)==1:
+				continue
+			if self.players.wordTree.getWord(word)==None:
+				print("not valid:",word)
+				unexpectedWords.append(word)
+		return unexpectedWords
 
 	def allWordsFormed(self, word):
 		yield word
@@ -249,6 +260,9 @@ class Board(object):
 		return True
 
 	def isValidMove(self, word):
+		'''Does not check for words validity or board coherence. 
+		Only checks the principle that your word must interact with existing letters.'''
+
 		if self.isEmpty(): # First move must pass through middle
 			passThroughMiddle = False
 			for x,y,_ in word.getLetters():

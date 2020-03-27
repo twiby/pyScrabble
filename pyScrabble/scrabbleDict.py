@@ -12,7 +12,7 @@ def replaceWeirdC(string):
 	return string
 
 
-def writeScrabbleWordsToNewFile(path):
+def writeScrabbleWordsToNewFileOld(path):
 	homePageLink = "http://scrabblemania.fr"
 	page = requests.get(homePageLink+"/tous-les-mots")
 	tree = html.fromstring(page.content)
@@ -60,3 +60,21 @@ def writeScrabbleWordsToNewFile(path):
 					f.write("%s\n" % txt)
 	print()
 
+def writeScrabbleWordsToNewFile(path):
+	with open(path, 'w') as f:
+
+		page = requests.get('https://www.listesdemots.net/touslesmots.htm')
+		tree = html.fromstring(page.content)
+		for word in tree.xpath('//span/text()')[1].split(' '):
+			f.write("%s\n" % word.lower())
+
+		for page in range(2,919):
+			sys.stdout.write("page "+str(page))
+			sys.stdout.write("\r")
+			sys.stdout.flush()
+
+			page = requests.get('https://www.listesdemots.net/touslesmotspage'+str(page)+'.htm')
+			tree = html.fromstring(page.content)
+			for word in tree.xpath('//span/text()')[1].split(' '):
+				f.write("%s\n" % word.lower())
+		print()

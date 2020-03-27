@@ -91,7 +91,8 @@ def getScrabbleBoard(board):
 		sys.stdout.flush()
 	for _ in range(15-x):
 		print()
-	if not board.checkAllWords():
+	if board.invalidWords()!=[]:
 		print("not all words are valid.")
+		board.players.addWords(board.invalidWords())
 
 	return board
