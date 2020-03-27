@@ -10,6 +10,11 @@ def main(args):
 		sb.computeScrabbleStats()
 		sys.exit(0)
 
+	if args.checkWords:
+		board = sb.Board()
+		print({w.asString() for w in board.players.wordTree.getAllAnagrams(args.checkWords)})
+		sys.exit(0)
+
 	if args.players:
 		nPlayers = args.players
 	else:
@@ -27,6 +32,7 @@ def main(args):
 
 if __name__=="__main__":
 	parser = argparse.ArgumentParser(description="Automatons to play scrabble")
+	parser.add_argument('--checkWords', type=str, help="returns all words formed with these letters")
 	parser.add_argument('--players', type=int, help="number of players")
 	parser.add_argument('--scrabbleStats', action='store_true', help="makes stats about probability of having a scrabble")
 	parser.add_argument('--auto', action='store_true', help="launches a game with automatic players")
