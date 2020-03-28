@@ -28,9 +28,9 @@ class Players(object):
 		self.players = [Player(board, self.wordTree, name="player "+str(n+1)) for n in range(nPlayers)]
 		self.finisher = None
 
-	def playOneTurn(self):
+	def playOneTurn(self, show=False):
 		for player in self.players:
-			player.playOneTurn()
+			player.playOneTurn(show=show)
 			if len(player.set)==0:
 				break
 
@@ -71,74 +71,86 @@ class Player(object):
 		status += str(self.score)
 		return status
 
-	def findBestWord(self, printResult=False):
+	def findBestWordAt(self, x, y, horizontal):
 		bestWord = None
 		bestWordScore = 0
+
+		if x!=0 and self.board.tiles[x-1,y].letter!=None:
+			return bestWord, bestWordScore
+
+		n = 2
+		nConstraints = 0
+		nLettersPossible = []
+		while n-nConstraints<8:
+			if x+n<15 and self.board.tiles[x+n,y].letter!=None:
+				n += 1
+				nConstraints += 1
+				continue
+			try:
+				wObj = sb.Word(x,y, word='0'*n, horizontal=False)
+			except sb.WordError:
+				break
+			if self.board.isValidMove(wObj):
+				nLettersPossible.append(n)
+			n += 1
+		
+		words={w.asString() for w in self.wordTree.getAllAnagrams(
+			self.set,
+			nLetters=nLettersPossible,
+			**self.getConstraints(x,y))}
+		for w in words:
+			wordObj = sb.Word(x,y, horizontal=False, word=w)
+			wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board))
+			if self.board.allWordsExist(wordObj) and wordScore > bestWordScore:
+				bestWordScore = wordScore
+				bestWord = wordObj
+				if horizontal:
+					bestWord = sb.Word(bestWord.y, bestWord.x, horizontal=True, word=str(bestWord))
+		return bestWord, bestWordScore
+
+	def findBestWord(self, printResult=False):
+		bestWords = []
+		bestScores = []
 		if self.board.isEmpty():
 			# First move of the game
-			wordList = list(self.wordTree.getAllAnagrams(self.set, nLetters=[7]))
-			if wordList == []:
-				wordList = list(self.wordTree.getAllAnagrams(self.set))
+			bestScores = [0]
+			wordList = list(self.wordTree.getAllAnagrams(self.set))
 			wordList = list({w.asString() for w in wordList})
 			for w in wordList:
 				for y in range(8-len(w), 8):
 					wordObj = sb.Word(7,y, word=w)
 					wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board))
-					if wordScore > bestWordScore:
-						bestWord = wordObj
-						bestWordScore = wordScore
+					if wordScore > bestScores[0]:
+						bestWords = [wordObj]
+						bestScores = [wordScore]
 
 		else:
 			for horizontal in [False, True]:
 				for x in range(15):
 					for y in range(15):
-						if x!=0 and self.board.tiles[x-1,y].letter!=None:
-							continue
-						if printResult and bestWord != None:
-							sys.stdout.write("best:"+str(bestWord.x)+","+str(bestWord.y)+": "+str(bestWord)+" ("+str(bestWordScore)+")  ((current "+str(x)+","+str(y)+"))    ")
-							sys.stdout.write("\r")
-							sys.stdout.flush()
+						bw, bs = self.findBestWordAt(x,y,horizontal)
+						if bw!=None:
+							bestWords.append(bw)
+							bestScores.append(bs)
 
-						n = 2
-						nConstraints = 0
-						nLettersPossible = []
-						while n-nConstraints<8:
-							if x+n<15 and self.board.tiles[x+n,y].letter!=None:
-								n += 1
-								nConstraints += 1
-								continue
-							try:
-								wObj = sb.Word(x,y, word='0'*n, horizontal=False)
-							except sb.WordError:
-								break
-							if self.board.isValidMove(wObj):
-								nLettersPossible.append(n)
-							n += 1
 						
-						words={w.asString() for w in self.wordTree.getAllAnagrams(
-							self.set,
-							nLetters=nLettersPossible,
-							**self.getConstraints(x,y))}
-						for w in words:
-							wordObj = sb.Word(x,y, horizontal=False, word=w)
-							wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board))
-							if self.board.allWordsExist(wordObj) and wordScore > bestWordScore:
-								bestWordScore = wordScore
-								bestWord = wordObj
-								if horizontal:
-									bestWord = sb.Word(bestWord.y, bestWord.x, horizontal=True, word=str(bestWord))
 				self.board.tiles = self.board.tiles.transpose()
 		
-		if printResult and bestWord:
+		bestWords = np.array(bestWords)
+		bestScores = np.array(bestScores)
+		bestWord = bestWords[np.argmax(bestScores)]
+		bestWordScore = np.max(bestScores)
+		if printResult and list(bestWords)!=[]:
 			print("best word : "+str(bestWord)+" at ("+str(bestWord.x)+","+str(bestWord.y)+") horizontal:"+str(bestWord.horizontal)+" for "+str(bestWordScore)+" points")
 		elif printResult:
 			print("no word found.")
+			return None
 		else:
 			print()
 		return bestWord
 
-	def playOneTurn(self):
-		bestWord = self.findBestWord()
+	def playOneTurn(self, show=False):
+		bestWord = self.findBestWord(printResult=show)
 
 		if bestWord==None:
 			if len(self.board.setOfLetters) == 0:

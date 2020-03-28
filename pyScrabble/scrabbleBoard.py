@@ -139,7 +139,7 @@ class Board(object):
 				self.letterFactor = 1
 				return True
 
-	def __init__(self, nPlayers=1):
+	def __init__(self, nPlayers=1, show=False):
 		wordFactorGrid = constants.wordFactorGrid.copy()
 		letterFactorGrid = constants.letterFactorGrid.copy()
 		self.tiles = np.array([[self.Tile(wordFactorGrid[x,y], letterFactorGrid[x,y]) for x in range(15)] for y in range(15)], dtype=object)
@@ -148,6 +148,7 @@ class Board(object):
 
 		self.log = []
 		self.players = pl.Players(self, nPlayers)
+		self.show = show
 
 	def startAdviser(self):
 		import pyScrabble.interface as i
@@ -155,7 +156,7 @@ class Board(object):
 		while playing:
 			self = i.getScrabbleBoard(self)
 			self.players.players[0].set = list(input("Enter your set of letters: "))
-			bestWord = self.players.players[0].findBestWord(printResult=True)
+			bestWord = self.players.players[0].findBestWord(printResult=self.show)
 			playing = askYesNo("Continue ?")
 			if bestWord!=None:
 				self.play(bestWord, self.players.players[0].set)
@@ -181,7 +182,7 @@ class Board(object):
 		print('total score : ',sum([pl.score for pl in self.players.players]))
 	
 	def playOneTurn(self):
-		self.players.playOneTurn()
+		self.players.playOneTurn(self.show)
 
 	def print(self):
 		for x in range(15):
