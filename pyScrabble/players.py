@@ -136,17 +136,20 @@ class Player(object):
 						
 				self.board.tiles = self.board.tiles.transpose()
 		
-		bestWords = np.array(bestWords)
 		bestScores = np.array(bestScores)
-		bestWord = bestWords[np.argmax(bestScores)]
-		bestWordScore = np.max(bestScores)
-		if printResult and list(bestWords)!=[]:
+		if bestWords==[]:
+			bestWord = None
+		else:
+			bestWord = bestWords[np.argmax(bestScores)]
+		
+		if printResult and bestWord!=None:
+			bestWordScore = np.max(bestScores)
 			print("best word : "+str(bestWord)+" at ("+str(bestWord.x)+","+str(bestWord.y)+") horizontal:"+str(bestWord.horizontal)+" for "+str(bestWordScore)+" points")
 		elif printResult:
 			print("no word found.")
-			return None
 		else:
 			print()
+
 		return bestWord
 
 	def playOneTurn(self, show=False):
