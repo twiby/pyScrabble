@@ -1,8 +1,8 @@
 import sys
 import numpy as np
 from random import shuffle
-from pyScrabble import constants
-from pyScrabble import players as pl
+from pyScrabbleUtils import constants
+from pyScrabbleUtils import players as pl
 
 class TileError(Exception):
 	pass
@@ -151,7 +151,7 @@ class Board(object):
 		self.show = show
 
 	def startAdviser(self):
-		import pyScrabble.interface as i
+		import pyScrabbleUtils.interface as i
 		playing = True
 		while playing:
 			self = i.getScrabbleBoard(self)

@@ -1,5 +1,5 @@
-import pyScrabble.scrabbleBoard as sb
-import pyScrabble.constants as c
+import pyScrabbleUtils.scrabbleBoard as sb
+import pyScrabbleUtils.constants as c
 import sys,tty,termios
 
 wordFactorColors   = dict(((1,''),(2,'\033[33m'),(3,'\033[31m')))

@@ -1,8 +1,8 @@
 import os
 import sys
 import numpy as np
-import pyScrabble.scrabbleTree as ps
-from pyScrabble import scrabbleBoard as sb
+import pyScrabbleUtils.scrabbleTree as ps
+from pyScrabbleUtils import scrabbleBoard as sb
 
 folder = os.path.dirname(os.path.realpath(__file__)) + "/../"
 
@@ -136,15 +136,16 @@ class Player(object):
 						
 				self.board.tiles = self.board.tiles.transpose()
 		
+		if bestWords == []:
+			if printResult:
+				print("no words found")
+			return None
 		bestWords = np.array(bestWords)
 		bestScores = np.array(bestScores)
 		bestWord = bestWords[np.argmax(bestScores)]
 		bestWordScore = np.max(bestScores)
 		if printResult and list(bestWords)!=[]:
 			print("best word : "+str(bestWord)+" at ("+str(bestWord.x)+","+str(bestWord.y)+") horizontal:"+str(bestWord.horizontal)+" for "+str(bestWordScore)+" points")
-		elif printResult:
-			print("no word found.")
-			return None
 		else:
 			print()
 		return bestWord
