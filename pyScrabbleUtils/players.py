@@ -71,7 +71,7 @@ class Player(object):
 		status += str(self.score)
 		return status
 
-	def findBestWordAt(self, x, y, horizontal):
+	def findBestWordAt(self, x, y):
 		bestWord = None
 		bestWordScore = 0
 
@@ -104,8 +104,6 @@ class Player(object):
 			if self.board.allWordsExist(wordObj) and wordScore > bestWordScore:
 				bestWordScore = wordScore
 				bestWord = wordObj
-				if horizontal:
-					bestWord = sb.Word(bestWord.y, bestWord.x, horizontal=True, word=str(bestWord))
 		return bestWord, bestWordScore
 
 	def findBestWord(self, printResult=False):
@@ -128,14 +126,17 @@ class Player(object):
 			for horizontal in [False, True]:
 				for x in range(15):
 					for y in range(15):
-						bw, bs = self.findBestWordAt(x,y,horizontal)
+						bw, bs = self.findBestWordAt(x,y)
 						if bw!=None:
+							if horizontal:
+								bw = sb.Word(bw.y, bw.x, horizontal=True, word=str(bw))
 							bestWords.append(bw)
 							bestScores.append(bs)
 
 						
 				self.board.tiles = self.board.tiles.transpose()
 		
+
 		if bestWords == []:
 			if printResult:
 				print("no words found")
@@ -143,11 +144,13 @@ class Player(object):
 		bestWords = np.array(bestWords)
 		bestScores = np.array(bestScores)
 		bestWord = bestWords[np.argmax(bestScores)]
-		bestWordScore = np.max(bestScores)
-		if printResult and list(bestWords)!=[]:
+		
+		if printResult and bestWord!=None:
+			bestWordScore = np.max(bestScores)
 			print("best word : "+str(bestWord)+" at ("+str(bestWord.x)+","+str(bestWord.y)+") horizontal:"+str(bestWord.horizontal)+" for "+str(bestWordScore)+" points")
 		else:
 			print()
+
 		return bestWord
 
 	def playOneTurn(self, show=False):
