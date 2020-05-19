@@ -182,17 +182,16 @@ class TreeNode(object):
 
 
 def createTree(path):
+	from tqdm import tqdm
+
 	with open(path, 'r') as f:
 		words = f.read().splitlines()
 
 	scrabbleTree = TreeNode('', isWord=False)
-	for word in words:
-		sys.stdout.write(word + " "*10)
-		sys.stdout.write("\r")
-		sys.stdout.flush()
+	print("creating and saving words data structure.")
+	for word in tqdm(words):
 		scrabbleTree.addWord(word)
 
-	print()
 	return scrabbleTree
 
 def loadTree(path):

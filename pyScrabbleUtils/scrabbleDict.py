@@ -61,6 +61,9 @@ def writeScrabbleWordsToNewFileOld(path):
 	print()
 
 def writeScrabbleWordsToNewFile(path):
+	from tqdm import trange
+
+	print("Html srapping of ODS8 scrabble dictionnary")
 	with open(path, 'w') as f:
 
 		page = requests.get('https://www.listesdemots.net/touslesmots.htm')
@@ -68,13 +71,8 @@ def writeScrabbleWordsToNewFile(path):
 		for word in tree.xpath('//span/text()')[1].split(' '):
 			f.write("%s\n" % word.lower())
 
-		for page in range(2,919):
-			sys.stdout.write("page "+str(page))
-			sys.stdout.write("\r")
-			sys.stdout.flush()
-
+		for page in trange(2,919):
 			page = requests.get('https://www.listesdemots.net/touslesmotspage'+str(page)+'.htm')
 			tree = html.fromstring(page.content)
 			for word in tree.xpath('//span/text()')[1].split(' '):
 				f.write("%s\n" % word.lower())
-		print()

@@ -8,7 +8,7 @@ folder = os.path.dirname(os.path.realpath(__file__)) + "/../"
 
 ### Get all the words of scrabble in a text file
 if not os.path.isfile(folder + "scrabbleWords.txt"):
-	from pyScrabble import scrabbleDict as sd
+	from pyScrabbleUtils import scrabbleDict as sd
 	sd.writeScrabbleWordsToNewFile(folder + "scrabbleWords.txt")
 
 
@@ -148,8 +148,6 @@ class Player(object):
 		if printResult and bestWord!=None:
 			bestWordScore = np.max(bestScores)
 			print("best word : "+str(bestWord)+" at ("+str(bestWord.x)+","+str(bestWord.y)+") horizontal:"+str(bestWord.horizontal)+" for "+str(bestWordScore)+" points")
-		else:
-			print()
 
 		return bestWord
 
