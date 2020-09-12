@@ -3,3 +3,4 @@ scrabble.tree*
 scrabbleWords*
 __pycache__
 .DS_Store
+/venv/*

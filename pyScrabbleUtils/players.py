@@ -78,7 +78,7 @@ class Player(object):
 		if x!=0 and self.board.tiles[x-1,y].letter!=None:
 			return bestWord, bestWordScore
 
-		n = 2
+		n = 1
 		nConstraints = 0
 		nLettersPossible = []
 		while n-nConstraints<8:
