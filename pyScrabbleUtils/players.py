@@ -81,19 +81,21 @@ class Player(object):
 		n = 1
 		nConstraints = 0
 		nLettersPossible = []
-		while n-nConstraints<8:
-			if x+n<15 and self.board.tiles[x+n,y].letter!=None:
-				n += 1
+		while n < 8:
+			if x+n+nConstraints-1<15 and self.board.tiles[x+n+nConstraints-1,y].letter!=None:
 				nConstraints += 1
 				continue
+			elif x+n+nConstraints<15 and self.board.tiles[x+n+nConstraints,y].letter!=None:
+				n += 1
+				continue
 			try:
-				wObj = sb.Word(x,y, word='0'*n, horizontal=False)
+				wObj = sb.Word(x,y, word='0'*(n+nConstraints), horizontal=False)
 			except sb.WordError:
 				break
 			if self.board.isValidMove(wObj):
-				nLettersPossible.append(n)
+				nLettersPossible.append(n+nConstraints)
 			n += 1
-		
+
 		words={w.asString() for w in self.wordTree.getAllAnagrams(
 			self.set,
 			nLetters=nLettersPossible,
