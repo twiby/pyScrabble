@@ -1,9 +1,5 @@
-certifi==2019.11.28
-chardet==3.0.4
-idna==2.9
-lxml==4.5.0
-numpy==1.18.1
-requests==2.23.0
-urllib3==1.25.8
-tqdm==4.46.0
+lxml
+numpy
+requests
+tqdm
 
