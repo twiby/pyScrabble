@@ -18,7 +18,10 @@ def main(args):
 
 	if args.wordCheck:
 		board = sb.Board(show=show)
-		print({w.asString() for w in board.players.wordTree.getAllAnagrams(args.wordCheck)})
+		all_words = {w.asString() for w in board.players.wordTree.getAllAnagrams(args.wordCheck)}
+		all_words = list(all_words)
+		all_words.sort(key=lambda s: -len(s))
+		print(all_words)
 		sys.exit(0)
 
 	if args.players:
