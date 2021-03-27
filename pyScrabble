@@ -10,11 +10,16 @@ def main(args):
 	if args.scrabbleStats:
 		sb.computeScrabbleStats()
 		sys.exit(0)
-
+	
 	if args.show:
 		show=True
 	else:
 		show=False
+
+	if args.dict:
+		board = sb.Board(show=show)
+		board.startDict()
+		sys.exit(0)
 
 	if args.wordCheck:
 		board = sb.Board(show=show)
@@ -46,5 +51,6 @@ if __name__=="__main__":
 	parser.add_argument('--scrabbleStats', action='store_true', help="makes stats about probability of having a scrabble")
 	parser.add_argument('-a','--auto', action='store_true', help="launches a game with automatic players")
 	parser.add_argument('-s','--show', action='store_true', help="shows current best word")
+	parser.add_argument('-d','--dict', action='store_true', help="tests words in dict")
 	args = parser.parse_args()
 	main(args)

@@ -3,6 +3,7 @@ import numpy as np
 from random import shuffle
 from pyScrabbleUtils import constants
 from pyScrabbleUtils import players as pl
+import colorama
 
 class TileError(Exception):
 	pass
@@ -160,6 +161,20 @@ class Board(object):
 			playing = askYesNo("Continue ?")
 			if bestWord!=None:
 				self.play(bestWord, self.players.players[0].set)
+	
+	def startDict(self):
+		import pyScrabbleUtils.interface as i
+		playing = True
+		while playing:
+			word = list(input("Enter your potential word: "))
+			if word == ['q']:
+				break
+			word = self.players.players[0].wordTree.getWord(word)
+			if word==None:
+				print(colorama.Back.RED + 'BAD' + colorama.Style.RESET_ALL)
+			else:
+				print(colorama.Back.GREEN + 'GOOD' + colorama.Style.RESET_ALL)
+			
 
 
 	def startAutomaton(self):
