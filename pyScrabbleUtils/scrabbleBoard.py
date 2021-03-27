@@ -167,6 +167,8 @@ class Board(object):
 		playing = True
 		while playing:
 			word = list(input("Enter your potential word: "))
+			if len(word) == 0:
+				continue
 			if word == ['q']:
 				break
 			word = self.players.players[0].wordTree.getWord(word)
