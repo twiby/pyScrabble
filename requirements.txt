@@ -2,4 +2,4 @@ lxml
 numpy
 requests
 tqdm
-
+colorama
