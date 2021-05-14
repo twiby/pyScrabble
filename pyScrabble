@@ -26,7 +26,21 @@ def main(args):
 		all_words = {w.asString() for w in board.players.wordTree.getAllAnagrams(args.wordCheck)}
 		all_words = list(all_words)
 		all_words.sort(key=lambda s: -len(s))
-		print(all_words)
+		print()
+		if (len(all_words) == 0):
+			print("No words found")
+		else:
+			cursor = 0
+			last_cursor = 0
+			max_nb_letters = len(all_words[0])
+			for n in range(max_nb_letters):
+				nb_letters = max_nb_letters - n
+				print(nb_letters, "letters:")
+				while cursor < len(all_words) and len(all_words[cursor]) == nb_letters:
+					cursor += 1
+				print(all_words[last_cursor:cursor],"\n")
+				last_cursor = cursor
+				
 		sys.exit(0)
 
 	if args.players:
