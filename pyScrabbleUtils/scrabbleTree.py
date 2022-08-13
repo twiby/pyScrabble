@@ -51,6 +51,7 @@ class TreeNode(object):
 		self.children = []
 		self.parent = None
 		self.nLetters = 0
+		self.string = ""
 
 	def getRoot(self):
 		node = self
@@ -67,6 +68,7 @@ class TreeNode(object):
 	def addNewChild(self, *args, **kwargs):
 		temp = TreeNode(*args, **kwargs)
 		self.addChild(temp)
+		temp.string = temp.asString()
 		return temp
 
 	def addWord(self, word):
@@ -138,6 +140,28 @@ class TreeNode(object):
 					continue
 				yield from node.getAllAnagrams(setList[:idx]+setList[idx+1:], constraintLetters=constraintLetters, constraintIndices=constraintIndices-1, nLetters=nLetters)
 
+	def testy(self, N, N2, forbiddenLetters="", ret=""):
+		if self.data == '' or self.data not in forbiddenLetters:
+
+			if N>0:
+				for child in self.children:
+					if ret != "" and child.string < ret.split(" ")[-2]:
+						continue
+					yield from child.testy(N-1, N2, forbiddenLetters=forbiddenLetters+self.data, ret=ret)
+			elif self.isWord:
+				if N2==0:
+					yield ret+self.string
+				else:
+					if N2==4:
+						print(self.string)
+					parent = self.parent
+					while parent.data != "":
+						parent = parent.parent
+					yield from parent.testy(self.nLetters, N2-1, forbiddenLetters=forbiddenLetters+self.string, ret=ret+self.string+" ")
+	def test(self, N):
+		yield from self.testy(N, 3)
+
+
 
 
 
@@ -147,7 +171,8 @@ class TreeNode(object):
 	def __len__(self):
 		return len(self.asString())
 	def __str__(self):
-		return self.asString()
+		return self.string
+		# return self.asString()
 	def asString(self):
 		prefix=""
 		node = self.parent

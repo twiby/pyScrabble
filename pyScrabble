@@ -7,6 +7,13 @@ import pyScrabbleUtils.scrabbleBoard as sb
 
 
 def main(args):
+
+	board = sb.Board(show=False)
+	for w in board.players.wordTree.test(5):
+		print(w)
+	sys.exit(0)
+
+
 	if args.scrabbleStats:
 		sb.computeScrabbleStats()
 		sys.exit(0)
