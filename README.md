@@ -1,5 +1,10 @@
 # Installation
-pyScrabble depends on a git submodule which is written in Rust, so be sure to install Rust at https://www.rust-lang.org/
+pyScrabble depends on a git submodule which is written in Rust, so be sure to install Rust at https://www.rust-lang.org/.
+To pull the submodule:
+```
+git submodule init
+git pull --recurse-submodules
+```
 
 As usual to install python modules, run in a venv:
 ```
