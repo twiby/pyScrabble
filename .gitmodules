@@ -1,0 +1,3 @@
+[submodule "rusted_tree"]
+	path = rusted_tree
+	url = git@github.com:twiby/rusted_tree.git
