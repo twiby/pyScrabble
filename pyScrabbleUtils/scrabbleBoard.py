@@ -1,9 +1,29 @@
+import os
 import sys
 import numpy as np
 from random import shuffle
+import rusted_tree as rt
 from pyScrabbleUtils import constants
 from pyScrabbleUtils import players as pl
 import colorama
+
+### Get Project folder
+def folder():
+	return os.path.dirname(os.path.realpath(__file__)) + "/../"
+
+### Get all the words of scrabble in a text file
+if not os.path.isfile(folder() + "scrabbleWords.txt"):
+	from pyScrabbleUtils import scrabbleDict as sd
+	sd.writeScrabbleWordsToNewFile(folder() + "scrabbleWords.txt")
+
+### Build WordFinder
+def getWordFinder():
+	return rt.WordFinder(folder() + "scrabbleWords.txt")
+
+### Organize the data in a tree
+if not os.path.isfile(folder() + "scrabble.tree"):
+	scrabbleTree = ps.createTree(folder() + "scrabbleWords.txt")
+	scrabbleTree.save(folder() + "scrabble.tree")
 
 class TileError(Exception):
 	pass
@@ -12,18 +32,19 @@ class WordError(Exception):
 
 def computeScrabbleStats(nTot=10000):
 	from random import shuffle
-	board = Board()
+	tree = getWordFinder()
 	scrabbleFound = 0
+	setOfLetters = constants.setOfLetters
 	for n in range(nTot):
 		sys.stdout.write(str(n))
 		sys.stdout.write('\r')
 		sys.stdout.flush()
-		temp = {w for w in board.players.wordTree.getAllAnagrams(board.setOfLetters[:7], nLetters=[7])}
+		temp = {w for w in tree.get_anagrams("".join(setOfLetters[:7]), nb_letters=[7])}
 		if temp == set():
 			pass
 		else:
 			scrabbleFound += 1
-		shuffle(board.setOfLetters)
+		shuffle(setOfLetters)
 
 	print("found a scrabble possible",scrabbleFound,"out of",nTot)
 	print("whch is like",scrabbleFound/nTot*100,"%")

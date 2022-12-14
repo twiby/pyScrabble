@@ -3,11 +3,11 @@ import os
 import sys
 import argparse
 
+import pyScrabbleUtils.scrabbleBoard as sb
 
 
 def main(args):
 	if args.scrabbleStats:
-		import pyScrabbleUtils.scrabbleBoard as sb
 
 		sb.computeScrabbleStats()
 		sys.exit(0)
@@ -18,17 +18,12 @@ def main(args):
 		show=False
 
 	if args.dict:
-		import pyScrabbleUtils.scrabbleBoard as sb
-
 		board = sb.Board(show=show)
 		board.startDict()
 		sys.exit(0)
 
-	if args.wordCheck:
-		import rusted_tree as rt
-		import pyScrabbleUtils.players as play
-		
-		tree = rt.WordFinder(play.folder() + "scrabbleWords.txt")
+	if args.wordCheck:		
+		tree = sb.getWordFinder()
 		all_words = {w for w in tree.get_anagrams(args.wordCheck)}
 		all_words = list(all_words)
 		all_words.sort(key=lambda s: -len(s))
@@ -55,13 +50,11 @@ def main(args):
 		nPlayers = 1
 
 	if args.auto:
-		import pyScrabbleUtils.scrabbleBoard as sb
 		board = sb.Board(nPlayers=nPlayers, show=show)
 		board.startAutomaton()
 		sys.exit(0)
 
 	else:
-		import pyScrabbleUtils.scrabbleBoard as sb
 		board = sb.Board(show=True)
 		board.startAdviser()
 
