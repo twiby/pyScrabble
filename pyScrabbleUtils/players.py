@@ -4,25 +4,27 @@ import numpy as np
 import pyScrabbleUtils.scrabbleTree as ps
 from pyScrabbleUtils import scrabbleBoard as sb
 
-folder = os.path.dirname(os.path.realpath(__file__)) + "/../"
+### Get Project folder
+def folder():
+	return os.path.dirname(os.path.realpath(__file__)) + "/../"
 
 ### Get all the words of scrabble in a text file
-if not os.path.isfile(folder + "scrabbleWords.txt"):
+if not os.path.isfile(folder() + "scrabbleWords.txt"):
 	from pyScrabbleUtils import scrabbleDict as sd
-	sd.writeScrabbleWordsToNewFile(folder + "scrabbleWords.txt")
+	sd.writeScrabbleWordsToNewFile(folder() + "scrabbleWords.txt")
 
 
 ### Organize the data in a tree
-if not os.path.isfile(folder + "scrabble.tree"):
-	scrabbleTree = ps.createTree(folder + "scrabbleWords.txt")
-	scrabbleTree.save(folder + "scrabble.tree")
+if not os.path.isfile(folder() + "scrabble.tree"):
+	scrabbleTree = ps.createTree(folder() + "scrabbleWords.txt")
+	scrabbleTree.save(folder() + "scrabble.tree")
 
 
 
 class Players(object):
 	def __init__(self, board, nPlayers=1):
 		self.board = board
-		self.wordTree = ps.loadTree(folder + "scrabble.tree")
+		self.wordTree = ps.loadTree(folder() + "scrabble.tree")
 		self.wordTree.addWord("ud")
 		self.wordTree.addWord("woh")
 		self.players = [Player(board, self.wordTree, name="player "+str(n+1)) for n in range(nPlayers)]
