@@ -93,6 +93,7 @@ def getScrabbleBoard(board):
 		print()
 	if board.invalidWords()!=[]:
 		print("not all words are valid.")
-		board.players.addWords(board.invalidWords())
+		for word in board.invalidWords():
+			board.wordFinder.add_word(word)
 
 	return board

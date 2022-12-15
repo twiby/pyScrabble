@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-import pyScrabbleUtils.scrabbleTree as ps
 from pyScrabbleUtils import scrabbleBoard as sb
 
 
@@ -8,10 +7,7 @@ from pyScrabbleUtils import scrabbleBoard as sb
 class Players(object):
 	def __init__(self, board, nPlayers=1):
 		self.board = board
-		self.wordTree = ps.loadTree(sb.folder() + "scrabble.tree")
-		self.wordTree.addWord("ud")
-		self.wordTree.addWord("woh")
-		self.players = [Player(board, self.wordTree, name="player "+str(n+1)) for n in range(nPlayers)]
+		self.players = [Player(board, name="player "+str(n+1)) for n in range(nPlayers)]
 		self.finisher = None
 
 	def playOneTurn(self, show=False):
@@ -34,16 +30,11 @@ class Players(object):
 				return False
 		return True
 
-	def addWords(self, words):
-		for word in words:
-			self.wordTree.addWord(word)
-
 class Player(object):
-	def __init__(self, board, wordTree, name=""):
+	def __init__(self, board, name=""):
 		self.board = board
 		self.score = 0
 		self.set = []
-		self.wordTree = wordTree
 		self.done = False
 		self.name = name
 
@@ -82,9 +73,9 @@ class Player(object):
 				nLettersPossible.append(n+nConstraints)
 			n += 1
 
-		words={w.asString() for w in self.wordTree.getAllAnagrams(
-			self.set,
-			nLetters=nLettersPossible,
+		words={w for w in self.board.wordFinder.get_anagrams(
+			"".join(self.set),
+			nb_letters=nLettersPossible,
 			**self.getConstraints(x,y))}
 		for w in words:
 			wordObj = sb.Word(x,y, horizontal=False, word=w)
@@ -100,8 +91,8 @@ class Player(object):
 		if self.board.isEmpty():
 			# First move of the game
 			bestScores = [0]
-			wordList = list(self.wordTree.getAllAnagrams(self.set))
-			wordList = list({w.asString() for w in wordList})
+			wordList = list(self.board.wordFinder.get_anagrams("".join(self.set)))
+			wordList = list({w for w in wordList})
 			for w in wordList:
 				for y in range(8-len(w), 8):
 					wordObj = sb.Word(7,y, word=w)
@@ -157,7 +148,11 @@ class Player(object):
 			x,y = y,x
 			self.board.tiles = self.board.tiles.transpose()
 		indices = np.where(np.array([self.board.tiles[i,y].letter for i in range(15)]) != None)[0]
-		letters = [self.board.tiles[i,y].letter for i in indices]
+		letters = np.array([self.board.tiles[i,y].letter for i in indices])
 		if horizontal:
 			self.board.tiles = self.board.tiles.transpose()
-		return {"constraintIndices": indices-x, "constraintLetters": letters}
+		indices = indices - x
+		forward_constraints = np.where(indices >= 0)[0]
+		letters = letters[forward_constraints]
+		indices = indices[forward_constraints]
+		return {"constraint_indices": indices, "constraint_letters": letters}

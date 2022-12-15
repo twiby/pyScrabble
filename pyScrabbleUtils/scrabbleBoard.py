@@ -192,7 +192,7 @@ class Board(object):
 			word = input("Enter your potential word: ")
 			if len(word) == 0:
 				continue
-			if word == ['q']:
+			if word == "q":
 				break
 			if self.wordFinder.is_word(word):
 				print(colorama.Back.GREEN + 'GOOD' + colorama.Style.RESET_ALL)
@@ -267,7 +267,7 @@ class Board(object):
 		for word in self.getAllWords():
 			if len(word)==1:
 				continue
-			if self.players.wordTree.getWord(word)==None:
+			if not self.wordFinder.is_word(word):
 				print("not valid:",word)
 				unexpectedWords.append(word)
 		return unexpectedWords
@@ -288,10 +288,7 @@ class Board(object):
 		return sum(self.getWordScore(w) for w in self.allWordsFormed(word)) + 50*int(word.numTrueLetters(self)==7)
 
 	def wordExists(self, word):
-		if self.players.wordTree.getWord(str(word))==None:
-			return False
-		else:
-			return True
+		return self.wordFinder.is_word(str(word))
 
 	def allWordsExist(self, word):
 		for w in self.allWordsFormed(word):
