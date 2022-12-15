@@ -168,6 +168,8 @@ class Board(object):
 		self.setOfLetters = constants.setOfLetters
 		shuffle(self.setOfLetters)
 
+		self.wordFinder = getWordFinder()
+
 		self.log = []
 		self.players = pl.Players(self, nPlayers)
 		self.show = show
@@ -187,16 +189,15 @@ class Board(object):
 		import pyScrabbleUtils.interface as i
 		playing = True
 		while playing:
-			word = list(input("Enter your potential word: "))
+			word = input("Enter your potential word: ")
 			if len(word) == 0:
 				continue
 			if word == ['q']:
 				break
-			word = self.players.players[0].wordTree.getWord(word)
-			if word==None:
-				print(colorama.Back.RED + 'BAD' + colorama.Style.RESET_ALL)
-			else:
+			if self.wordFinder.is_word(word):
 				print(colorama.Back.GREEN + 'GOOD' + colorama.Style.RESET_ALL)
+			else:
+				print(colorama.Back.RED + 'BAD' + colorama.Style.RESET_ALL)
 			
 
 
