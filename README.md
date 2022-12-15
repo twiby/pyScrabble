@@ -34,10 +34,3 @@ for help on the different options, use
 ./pyScrabble -h
 ```
 
-
-# Personalisation
-
-For those who want to try their own algorithms, data structures and utils are defined in scrableTree.py 
-(getWord and getAllAnagrams are the main functions used outside)
-
-The algo for searching best move is in pyScrabbleUtils/players.py in the method Player.findBestWord
