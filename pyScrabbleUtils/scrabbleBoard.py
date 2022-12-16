@@ -20,11 +20,6 @@ if not os.path.isfile(folder() + "scrabbleWords.txt"):
 def getWordFinder():
 	return rt.WordFinder(folder() + "scrabbleWords.txt")
 
-### Organize the data in a tree
-if not os.path.isfile(folder() + "scrabble.tree"):
-	scrabbleTree = ps.createTree(folder() + "scrabbleWords.txt")
-	scrabbleTree.save(folder() + "scrabble.tree")
-
 class TileError(Exception):
 	pass
 class WordError(Exception):
