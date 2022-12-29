@@ -2,7 +2,7 @@ import os
 import sys
 import numpy as np
 from random import shuffle
-import rusted_tree as rt
+import rsScrabble as rs
 from pyScrabbleUtils import constants
 from pyScrabbleUtils import players as pl
 import colorama
@@ -18,7 +18,7 @@ if not os.path.isfile(folder() + "scrabbleWords.txt"):
 
 ### Build WordFinder
 def getWordFinder():
-	return rt.WordFinder(folder() + "scrabbleWords.txt")
+	return rs.WordFinder(folder() + "scrabbleWords.txt")
 
 class TileError(Exception):
 	pass
@@ -109,6 +109,13 @@ class Word(object):
 					letter.c = boardLetter
 		return newWord
 
+	def replaceConstraint(self, tiles):
+		for letter in self.letters:
+			if letter.c == '_':
+				letter.c = tiles[letter.x, letter.y].letter
+				if letter.c == None:
+					raise WordError('Empty letter on empty tile')
+
 	def getOtherWordsFormed(self, board):
 		for letter in self.letters:
 			if board.tiles[letter.x, letter.y].letter!=None:
@@ -146,8 +153,10 @@ class Board(object):
 			self.letter = letter
 
 		def playTile(self, c):
-			if self.letter != None and self.letter != c:
+			if self.letter != None and self.letter != c and c != '_':
 				raise TileError("Tile not compatible !")
+			elif self.letter == None and c == '_':
+				raise TileError("Not one wants to play")
 			elif self.letter == c:
 				return False
 			else:
@@ -353,3 +362,17 @@ class Board(object):
 			shuffle(self.setOfLetters)
 			newLetters = [self.setOfLetters.pop() for _ in range(nNewLetters)]
 		return newLetters
+
+	def serialize(self):
+		ret = ""
+		for x in range(15):
+			for y in range(15):
+				if not self.tiles[x, y].letter is None:
+					ret += self.tiles[x, y].letter 
+				elif self.tiles[x,y].letterFactor > 1:
+					ret += str(self.tiles[x,y].letterFactor)
+				elif self.tiles[x,y].wordFactor > 1:
+					ret += str(self.tiles[x,y].wordFactor + 3)
+				else:
+					ret += '_'
+		return ret

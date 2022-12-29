@@ -86,47 +86,23 @@ class Player(object):
 		return bestWord, bestWordScore
 
 	def findBestWord(self, printResult=False):
-		bestWords = []
-		bestScores = []
 		if self.board.isEmpty():
 			# First move of the game
-			bestScores = [0]
-			wordList = list(self.board.wordFinder.get_anagrams("".join(self.set)))
-			wordList = list({w for w in wordList})
-			for w in wordList:
-				for y in range(8-len(w), 8):
-					wordObj = sb.Word(7,y, word=w)
-					wordScore = self.board.getScore(wordObj.replaceJoker(self.set, self.board))
-					if wordScore > bestScores[0]:
-						bestWords = [wordObj]
-						bestScores = [wordScore]
-
+			bestWordBase = self.board.wordFinder.get_best_first_play("".join(self.set), self.board.serialize());
 		else:
-			for horizontal in [False, True]:
-				for x in range(15):
-					for y in range(15):
-						bw, bs = self.findBestWordAt(x,y)
-						if bw!=None:
-							if horizontal:
-								bw = sb.Word(bw.y, bw.x, horizontal=True, word=str(bw))
-							bestWords.append(bw)
-							bestScores.append(bs)
+			bestWordBase = self.board.wordFinder.get_best_play("".join(self.set), self.board.serialize());
 
-						
-				self.board.tiles = self.board.tiles.transpose()
-		
-
-		if bestWords == []:
+		if bestWordBase == None:
 			if printResult:
 				print("no words found")
 			return None
-		bestWords = np.array(bestWords)
-		bestScores = np.array(bestScores)
-		bestWord = bestWords[np.argmax(bestScores)]
+
+		bestWord = sb.Word(bestWordBase.coord[0], bestWordBase.coord[1], horizontal=not bestWordBase.vertical, word=bestWordBase.word.lower())
+		bestScore = bestWordBase.score
+		bestWord.replaceConstraint(self.board.tiles)
 		
 		if printResult and bestWord!=None:
-			bestWordScore = np.max(bestScores)
-			print("best word : "+str(bestWord)+" at ("+str(bestWord.x)+","+str(bestWord.y)+") horizontal:"+str(bestWord.horizontal)+" for "+str(bestWordScore)+" points")
+			print("best word : "+str(bestWord)+" at ("+str(bestWord.x)+","+str(bestWord.y)+") horizontal:"+str(bestWord.horizontal)+" for "+str(bestScore)+" points")
 
 		return bestWord
 
