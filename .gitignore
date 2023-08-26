@@ -3,3 +3,5 @@ scrabbleWords*
 __pycache__
 .DS_Store
 /venv/*
+/target
+/Cargo.lock

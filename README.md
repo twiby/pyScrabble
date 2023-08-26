@@ -1,23 +1,9 @@
 # Installation
-pyScrabble depends on a git submodule which is written in Rust, so be sure to install Rust at https://www.rust-lang.org/.
-To pull the submodule:
+pyScrabble depends on code which is written in Rust, so be sure to install Rust at https://www.rust-lang.org/.
+You can install all dependencies and compile the Rust code with the single command:
 ```
-git submodule init
-git pull --recurse-submodules
+pip install .
 ```
-
-As usual to install python modules, run in a venv:
-```
-pip install -r requirements
-```
-
-Additionnally, to compile and install as a python package the submodule run the following
-```
-cd rsScrabble
-maturin develop -r
-```
-You can check that a new module is now available via calling `pip freeze`
-
 
 # pyScrabble
 a utility for scrabble.

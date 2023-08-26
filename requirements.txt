@@ -1,6 +1,0 @@
-lxml
-numpy
-requests
-tqdm
-colorama
-maturin

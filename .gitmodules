@@ -1,6 +1,0 @@
-[submodule "rusted_tree"]
-	path = rusted_tree
-	url = git@github.com:twiby/rusted_tree.git
-[submodule "rsScrabble"]
-	path = rsScrabble
-	url = git@github.com:twiby/rsScrabble
