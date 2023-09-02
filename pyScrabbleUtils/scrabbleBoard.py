@@ -11,13 +11,10 @@ import colorama
 def folder():
 	return os.path.dirname(os.path.realpath(__file__)) + "/../"
 
-### Get all the words of scrabble in a text file
-if not os.path.isfile(folder() + "scrabbleWords.txt"):
-	from pyScrabbleUtils import scrabbleDict as sd
-	sd.writeScrabbleWordsToNewFile(folder() + "scrabbleWords.txt")
-
 ### Build WordFinder
 def getWordFinder():
+	if not os.path.isfile(folder() + "scrabbleWords.txt"):
+		raise RuntimeError("Dictionnary not found. Please download the dictionnary using the flag \"--download\".")
 	return rs.WordFinder(folder() + "scrabbleWords.txt")
 
 class TileError(Exception):

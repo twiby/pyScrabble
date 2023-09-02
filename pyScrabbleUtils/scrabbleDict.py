@@ -82,5 +82,4 @@ def writeScrabbleWordsToNewFile(path):
 				nb_words += 1
 
 	if nb_words != 411430:
-		print("Wrong number of words were fetched. Something went wrong !")
-		sys.exit(1)
+		raise RuntimeError("Wrong number of words were fetched. Something went wrong !")
