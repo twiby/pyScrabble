@@ -31,10 +31,8 @@ impl std::fmt::Debug for StrTree {
 impl Dictionnary for StrTree {
 	fn build_dict_from_file(filename: &str) -> std::io::Result<StrTree> {
 		let mut ret = StrTree::init();
-		match ret.fill_with_file(filename) {
-			Err(e) => return Err(e),
-			Ok(_) => return Ok(ret)
-		};
+		ret.fill_with_file(filename)?;
+		Ok(ret)
 	}
 
 	fn get_anagrams<CNbL, CL, CW>(
@@ -85,12 +83,9 @@ impl Dictionnary for StrTree {
 	}
 
 	fn add_word(&mut self, word: &str) {
-		let mut letter_idx: usize = 0;
 		let mut node = self;
-
-		while let Some(c) = word.chars().nth(letter_idx) {
+		for c in word.chars() {
 			node = node.get_or_make_child(c);
-			letter_idx += 1;
 		}
 		node.is_word = true;
 	}
@@ -112,17 +107,16 @@ impl StrTree {
 	}
 
 	fn get_child_idx(&self, c: char) -> Option<usize> {
-		for i in 0..self.children.len() {
-			if self.children[i].data == Some(c) {
+		for (i, child) in self.children.iter().enumerate() {
+			if child.data == Some(c) {
 				return Some(i);
 			}
 		}
 		return None;
 	}
 
-	fn get_child<'a>(&'a self, c: char) -> Option<&'a StrTree> {
-		let i = self.get_child_idx(c)?;
-		return Some(&self.children[i]);
+	fn get_child(&self, c: char) -> Option<&StrTree> {
+		Some(&self.children[self.get_child_idx(c)?])
 	}
 
 	fn get_or_make_child(&mut self, c:char) -> &mut StrTree {
@@ -132,7 +126,7 @@ impl StrTree {
 		};
 	}
 
-	fn add_child<'a>(&'a mut self, c: char) -> &'a mut StrTree {
+	fn add_child(&mut self, c: char) -> &mut StrTree {
 		let new_tree = StrTree{
 			data: Some(c),
 			is_word: false,
@@ -142,15 +136,10 @@ impl StrTree {
 		return self.children.last_mut().unwrap();
 	}
 
-	fn get_node<'a: 'b, 'b>(&'a self, word: &str) -> Option<&'b StrTree> {
-		let mut letter_idx: usize = 0;
+	fn get_node(&self, word: &str) -> Option<&StrTree> {
 		let mut node = self;
-		while let Some(c) = word.chars().nth(letter_idx) {
-			match node.get_child(c) {
-				None => return None,
-				Some(child) => node = child
-			};
-			letter_idx += 1;
+		for c in word.chars() {
+			node = node.get_child(c)?;
 		}
 		return Some(node);
 	}
@@ -203,15 +192,17 @@ impl StrTree {
 		match self.data {
 			None => (),
 			Some(c) => {
-				let ret = match words_to_fill[length-1] {
-					None => false,
+				let valid_filled_word = match words_to_fill[length-1] {
+					None => true,
 					Some((ref node, ref end)) => {
 						if let Some(child) = node.get_child(c) {
-							!child.is_word(&end)
-						} else { true }
+							child.is_word(&end)
+						} else {
+							false 
+						}
 					}
 				};
-				if ret {
+				if !valid_filled_word {
 					return;
 				}
 			}
