@@ -5,16 +5,20 @@ use std::path::Path;
 // The output is wrapped in a Result to allow matching on errors
 // Returns an Iterator to the Reader of the lines of the file.
 pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
+where
+    P: AsRef<Path>,
+{
     let file = File::open(filename)?;
     return Ok(io::BufReader::new(file).lines());
 }
 
 pub fn cnt_lines<P>(filename: P) -> io::Result<u32>
-where P: AsRef<Path>, {
+where
+    P: AsRef<Path>,
+{
     let file = File::open(filename)?;
 
-    let mut cnt:u32 = 0;
+    let mut cnt: u32 = 0;
     for _ in io::BufReader::new(file).lines() {
         cnt = cnt + 1;
     }
