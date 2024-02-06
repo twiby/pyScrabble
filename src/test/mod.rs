@@ -1,4 +1,5 @@
 use crate::str_tree;
+use crate::str_tree::Walker;
 use crate::str_tree::{Dictionnary, StaticWord};
 
 fn to_string_vec(words: &Vec<StaticWord>) -> Vec<String> {
@@ -59,9 +60,32 @@ fn existing_words() {
     assert!(tree.is_word("arbre"));
     assert!(tree.is_word("bar"));
     assert!(tree.is_word("barre"));
+    assert!(tree.is_word("barbe"));
     assert!(tree.is_word("mazout"));
-    assert!(tree.is_word("cenestpasunmotduscrabble"));
+    assert!(tree.is_word("unmotduscrabble"));
+    assert!(tree.is_word("rzzzzzzzz"));
+    assert!(tree.is_word("ezzzzzzzz"));
+    assert!(tree.is_word("bezzzzzzz"));
     assert!(!tree.is_word("erreur"));
+}
+
+#[test]
+fn walker() {
+    let tree = str_tree::build_dict_from_file("src/test/words.txt").expect("File not found");
+    let walker = Walker::new(&tree).as_words();
+
+    let mut count = 0;
+    for word in walker {
+        count += 1;
+        println!("{:?}", word);
+        assert!(tree.is_word(&word));
+
+        if count > 500_000 {
+            panic!("probable infinite recursion");
+        }
+    }
+
+    assert_eq!(count, 9);
 }
 
 #[test]

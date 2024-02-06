@@ -5,11 +5,14 @@ pub use read_file::read_lines;
 mod tree_building;
 pub use tree_building::StrTree;
 
+mod tree_iterator;
+pub(crate) use tree_iterator::Walker;
+
 pub use crate::board::WordError;
 pub use crate::board::SIDE;
 pub use crate::constraints::{ConstraintLetters, ConstraintNbLetters, ConstraintWords};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct StaticWord {
     w: [char; SIDE],
     l: usize,

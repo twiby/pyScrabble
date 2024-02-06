@@ -10,6 +10,18 @@ pub struct StrTree {
     children: Vec<StrTree>,
 }
 
+impl StrTree {
+    pub(crate) fn child(&self, n: usize) -> Option<&StrTree> {
+        self.children.get(n)
+    }
+    pub(crate) fn data(&self) -> Option<char> {
+        self.data
+    }
+    pub(crate) fn self_is_word(&self) -> bool {
+        self.is_word
+    }
+}
+
 impl std::fmt::Debug for StrTree {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut string = match self.data {
