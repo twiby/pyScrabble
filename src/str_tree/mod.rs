@@ -28,9 +28,12 @@ impl StaticWord {
     pub fn len(&self) -> usize {
         self.l
     }
-    pub fn pop(&mut self) {
+    pub fn pop(&mut self) -> Option<char> {
         if self.l > 0 {
-            self.l -= 1
+            self.l -= 1;
+            Some(self.w[self.l])
+        } else {
+            None
         }
     }
 }

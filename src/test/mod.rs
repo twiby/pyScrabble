@@ -1,5 +1,6 @@
 use crate::str_tree;
 use crate::str_tree::{Dictionnary, StaticWord};
+use std::collections::HashSet;
 
 fn to_string_vec(words: &Vec<StaticWord>) -> Vec<String> {
     words.iter().map(|w| w.str()).collect()
@@ -40,6 +41,16 @@ where
         }
     }
     return true;
+}
+
+fn assert_unordered_equal<T: std::cmp::Eq + std::fmt::Debug + std::hash::Hash>(
+    v1: Vec<T>,
+    v2: Vec<T>,
+) {
+    assert_eq!(
+        v1.into_iter().collect::<HashSet<T>>(),
+        v2.into_iter().collect::<HashSet<T>>()
+    );
 }
 
 #[test]
@@ -87,6 +98,18 @@ fn tree_iterator() {
     }
 
     assert_eq!(count, 9);
+}
+
+#[test]
+fn tree_anagrammer() {
+    let tree = str_tree::build_dict_from_file("src/test/words.txt").expect("File not found");
+    let walker = tree
+        .anagrams("arbre")
+        .map(|mut static_word| static_word.into_word().iter().collect::<String>());
+
+    let anagrams = walker.collect::<Vec<_>>();
+    let correct_answer = vec!["arbre".to_string(), "bar".to_string(), "barre".to_string()];
+    assert_unordered_equal(anagrams, correct_answer);
 }
 
 #[test]

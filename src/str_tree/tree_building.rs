@@ -3,6 +3,7 @@ use crate::str_tree::SIDE;
 use crate::str_tree::{cnt_lines, read_lines};
 use crate::str_tree::{ConstraintLetters, ConstraintNbLetters, ConstraintWords};
 use crate::str_tree::{Dictionnary, StaticWord};
+use std::collections::HashSet;
 
 struct TreeIter<'a> {
     cursor: Vec<std::slice::Iter<'a, StrTree>>,
@@ -37,6 +38,66 @@ impl<'a> Iterator for TreeIter<'a> {
     }
 }
 
+struct LetterSet<T> {
+    data: Vec<T>,
+}
+impl<T> From<Vec<T>> for LetterSet<T> {
+    fn from(val: Vec<T>) -> Self {
+        Self { data: val }
+    }
+}
+impl<T: PartialEq> LetterSet<T> {
+    fn remove(&mut self, val: &T) -> bool {
+        for i in 0..self.data.len() {
+            if self.data[i] == *val {
+                self.data.swap_remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+    fn insert(&mut self, val: T) {
+        self.data.push(val)
+    }
+}
+
+struct TreeAnagrammer<'a> {
+    cursor: Vec<std::slice::Iter<'a, StrTree>>,
+    word: StaticWord,
+    set: LetterSet<char>,
+}
+
+impl<'a> TreeAnagrammer<'a> {
+    fn new(tree: &'a StrTree, set: Vec<char>) -> Self {
+        Self {
+            cursor: vec![tree.children.iter()],
+            word: Default::default(),
+            set: set.into(),
+        }
+    }
+}
+
+impl<'a> Iterator for TreeAnagrammer<'a> {
+    type Item = (&'a StrTree, StaticWord);
+    fn next(&mut self) -> Option<Self::Item> {
+        let Some(it) = self.cursor.last_mut() else {
+            return None;
+        };
+
+        if let Some(child) = it.filter(|c| self.set.remove(&c.data.unwrap())).next() {
+            self.word.push(child.data.unwrap());
+            self.cursor.push(child.children.iter());
+            Some((child, self.word))
+        } else {
+            if let Some(c) = self.word.pop() {
+                self.set.insert(c);
+            }
+            self.cursor.pop();
+            self.next()
+        }
+    }
+}
+
 pub struct StrTree {
     data: Option<char>,
     is_word: bool,
@@ -46,6 +107,13 @@ pub struct StrTree {
 impl StrTree {
     pub(crate) fn iter_words(&self) -> impl Iterator<Item = StaticWord> + '_ {
         TreeIter::new(self)
+            .filter(|(node, _)| node.is_word)
+            .map(|(_, word)| word)
+    }
+
+    pub(crate) fn anagrams(&self, letters: &str) -> impl Iterator<Item = StaticWord> + '_ {
+        let letter_set_vec: Vec<char> = letters.chars().collect();
+        TreeAnagrammer::new(self, letter_set_vec)
             .filter(|(node, _)| node.is_word)
             .map(|(_, word)| word)
     }
