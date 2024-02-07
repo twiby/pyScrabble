@@ -4,6 +4,39 @@ use crate::str_tree::{cnt_lines, read_lines};
 use crate::str_tree::{ConstraintLetters, ConstraintNbLetters, ConstraintWords};
 use crate::str_tree::{Dictionnary, StaticWord};
 
+struct TreeIter<'a> {
+    cursor: Vec<std::slice::Iter<'a, StrTree>>,
+    word: StaticWord,
+}
+
+impl<'a> TreeIter<'a> {
+    fn new(tree: &'a StrTree) -> Self {
+        Self {
+            cursor: vec![tree.children.iter()],
+            word: Default::default(),
+        }
+    }
+}
+
+impl<'a> Iterator for TreeIter<'a> {
+    type Item = (&'a StrTree, StaticWord);
+    fn next(&mut self) -> Option<Self::Item> {
+        let Some(mut it) = self.cursor.pop() else {
+            return None;
+        };
+
+        let Some(child) = it.next() else {
+            self.word.pop();
+            return self.next();
+        };
+
+        self.word.push(child.data.unwrap());
+        self.cursor.push(it);
+        self.cursor.push(child.children.iter());
+        Some((child, self.word))
+    }
+}
+
 pub struct StrTree {
     data: Option<char>,
     is_word: bool,
@@ -11,14 +44,10 @@ pub struct StrTree {
 }
 
 impl StrTree {
-    pub(crate) fn child(&self, n: usize) -> Option<&StrTree> {
-        self.children.get(n)
-    }
-    pub(crate) fn data(&self) -> Option<char> {
-        self.data
-    }
-    pub(crate) fn self_is_word(&self) -> bool {
-        self.is_word
+    pub(crate) fn iter_words(&self) -> impl Iterator<Item = StaticWord> + '_ {
+        TreeIter::new(self)
+            .filter(|(node, _)| node.is_word)
+            .map(|(_, word)| word)
     }
 }
 

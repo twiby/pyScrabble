@@ -5,9 +5,6 @@ pub use read_file::read_lines;
 mod tree_building;
 pub use tree_building::StrTree;
 
-mod tree_iterator;
-pub(crate) use tree_iterator::Walker;
-
 pub use crate::board::WordError;
 pub use crate::board::SIDE;
 pub use crate::constraints::{ConstraintLetters, ConstraintNbLetters, ConstraintWords};
@@ -30,6 +27,11 @@ impl StaticWord {
     }
     pub fn len(&self) -> usize {
         self.l
+    }
+    pub fn pop(&mut self) {
+        if self.l > 0 {
+            self.l -= 1
+        }
     }
 }
 

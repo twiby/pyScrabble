@@ -1,5 +1,4 @@
 use crate::str_tree;
-use crate::str_tree::Walker;
 use crate::str_tree::{Dictionnary, StaticWord};
 
 fn to_string_vec(words: &Vec<StaticWord>) -> Vec<String> {
@@ -70,10 +69,11 @@ fn existing_words() {
 }
 
 #[test]
-fn walker() {
+fn tree_iterator() {
     let tree = str_tree::build_dict_from_file("src/test/words.txt").expect("File not found");
-    let walker = Walker::new(&tree)
-        .map(|mut static_word| static_word.into_word().iter().rev().collect::<String>());
+    let walker = tree
+        .iter_words()
+        .map(|mut static_word| static_word.into_word().iter().collect::<String>());
 
     let mut count = 0;
     for word in walker {
