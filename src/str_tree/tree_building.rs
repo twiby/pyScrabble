@@ -72,12 +72,19 @@ enum LevelState {
 
 #[derive(Debug)]
 struct TreeAnagrammer<'a> {
+    // Itertaor state
     states: Vec<LevelState>,
     parents: Vec<&'a StrTree>,
     cursor: Vec<std::slice::Iter<'a, StrTree>>,
+
+    // letter info
     word: StaticWord,
     set: LetterSet,
     nb_available_jokers: usize,
+    // Constraints type
+    // nb_letters: CNbL,
+    // letter_constraints: CL,
+    // word_constraints: CW,
 }
 impl<'a> TreeAnagrammer<'a> {
     fn new(tree: &'a StrTree, set: Vec<char>) -> Self {
@@ -89,6 +96,7 @@ impl<'a> TreeAnagrammer<'a> {
             nb_available_jokers: set.iter().filter(|&&c| c == '0').count(),
             set: LetterSet::from_letters(set),
         };
+
         ret.cursor.push(tree.children.iter());
         ret.parents.push(tree);
         if ret.nb_available_jokers == 0 {
@@ -97,6 +105,7 @@ impl<'a> TreeAnagrammer<'a> {
             ret.states.push(LevelState::UsingJoker);
             ret.nb_available_jokers -= 1;
         }
+
         ret
     }
     fn push_child(&mut self, child: &'a StrTree) {
@@ -136,9 +145,18 @@ impl<'a> TreeAnagrammer<'a> {
         }
         None
     }
+
+    /// Final check before returning
+    fn return_state_if_valid(&mut self) -> Option<StaticWord> {
+        if self.parents.last()?.is_word {
+            Some(self.word)
+        } else {
+            self.next()
+        }
+    }
 }
 impl<'a> Iterator for TreeAnagrammer<'a> {
-    type Item = (&'a StrTree, StaticWord);
+    type Item = StaticWord;
     fn next(&mut self) -> Option<Self::Item> {
         if self.cursor.is_empty() {
             return None;
@@ -152,8 +170,9 @@ impl<'a> Iterator for TreeAnagrammer<'a> {
             LevelState::UsingJoker => {
                 if let Some(child) = self.next_child() {
                     self.push_child(child);
-                    Some((child, self.word))
+                    self.return_state_if_valid()
                 } else {
+                    // wind back the last cursor
                     self.cursor[last] = self.parents[last].children.iter();
                     self.states[last] = LevelState::JokerUsed;
                     self.nb_available_jokers += 1;
@@ -164,7 +183,7 @@ impl<'a> Iterator for TreeAnagrammer<'a> {
             LevelState::JokerUsed => {
                 if let Some(child) = self.next_child_from_set() {
                     self.push_child(child);
-                    Some((child, self.word))
+                    self.return_state_if_valid()
                 } else {
                     self.pop_child();
                     self.next()
@@ -190,8 +209,6 @@ impl StrTree {
     pub(crate) fn anagrams(&self, letters: &str) -> impl Iterator<Item = StaticWord> + '_ {
         let letter_set_vec: Vec<char> = letters.chars().collect();
         TreeAnagrammer::new(self, letter_set_vec)
-            .filter(|(node, _)| node.is_word)
-            .map(|(_, word)| word)
     }
 }
 
