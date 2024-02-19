@@ -3,7 +3,6 @@ use crate::str_tree::SIDE;
 use crate::str_tree::{cnt_lines, read_lines};
 use crate::str_tree::{ConstraintLetters, ConstraintNbLetters, ConstraintWords};
 use crate::str_tree::{Dictionnary, StaticWord};
-use std::collections::HashSet;
 
 struct TreeIter<'a> {
     cursor: Vec<std::slice::Iter<'a, StrTree>>,
@@ -38,62 +37,139 @@ impl<'a> Iterator for TreeIter<'a> {
     }
 }
 
-struct LetterSet<T> {
-    data: Vec<T>,
+#[derive(Debug)]
+struct LetterSet {
+    data: Vec<char>,
 }
-impl<T> From<Vec<T>> for LetterSet<T> {
-    fn from(val: Vec<T>) -> Self {
-        Self { data: val }
+impl LetterSet {
+    fn from_letters(letters: Vec<char>) -> Self {
+        let mut ret = Self {
+            data: Vec::with_capacity(letters.len()),
+        };
+        ret.data
+            .extend(letters.into_iter().filter(|c| c.is_ascii_lowercase()));
+        ret
     }
-}
-impl<T: PartialEq> LetterSet<T> {
-    fn remove(&mut self, val: &T) -> bool {
+    fn remove(&mut self, val: char) -> bool {
         for i in 0..self.data.len() {
-            if self.data[i] == *val {
+            if self.data[i] == val {
                 self.data.swap_remove(i);
                 return true;
             }
         }
         return false;
     }
-    fn insert(&mut self, val: T) {
+    fn insert(&mut self, val: char) {
         self.data.push(val)
     }
 }
 
+#[derive(Debug, PartialEq)]
+enum LevelState {
+    UsingJoker,
+    JokerUsed,
+}
+
+#[derive(Debug)]
 struct TreeAnagrammer<'a> {
+    states: Vec<LevelState>,
+    parents: Vec<&'a StrTree>,
     cursor: Vec<std::slice::Iter<'a, StrTree>>,
     word: StaticWord,
-    set: LetterSet<char>,
+    set: LetterSet,
+    nb_available_jokers: usize,
 }
-
 impl<'a> TreeAnagrammer<'a> {
     fn new(tree: &'a StrTree, set: Vec<char>) -> Self {
-        Self {
-            cursor: vec![tree.children.iter()],
+        let mut ret = Self {
+            states: vec![],
+            parents: vec![],
+            cursor: vec![],
             word: Default::default(),
-            set: set.into(),
+            nb_available_jokers: set.iter().filter(|&&c| c == '0').count(),
+            set: LetterSet::from_letters(set),
+        };
+        ret.cursor.push(tree.children.iter());
+        ret.parents.push(tree);
+        if ret.nb_available_jokers == 0 {
+            ret.states.push(LevelState::JokerUsed);
+        } else {
+            ret.states.push(LevelState::UsingJoker);
+            ret.nb_available_jokers -= 1;
+        }
+        ret
+    }
+    fn push_child(&mut self, child: &'a StrTree) {
+        let mut c = child.data.unwrap();
+        if self.states.last() == Some(&LevelState::UsingJoker) {
+            c = c.to_ascii_uppercase();
+        }
+        self.word.push(c);
+        self.cursor.push(child.children.iter());
+        self.parents.push(child);
+
+        if self.nb_available_jokers == 0 {
+            self.states.push(LevelState::JokerUsed);
+        } else {
+            self.states.push(LevelState::UsingJoker);
+            self.nb_available_jokers -= 1;
         }
     }
+    fn pop_child(&mut self) {
+        self.cursor.pop();
+        self.parents.pop();
+        self.states.pop();
+        if let Some(c) = self.word.pop() {
+            if c.is_ascii_lowercase() {
+                self.set.insert(c);
+            }
+        }
+    }
+    fn next_child(&mut self) -> Option<&'a StrTree> {
+        self.cursor.last_mut()?.next()
+    }
+    fn next_child_from_set(&mut self) -> Option<&'a StrTree> {
+        while let Some(c) = self.next_child() {
+            if self.set.remove(c.data?) {
+                return Some(c);
+            }
+        }
+        None
+    }
 }
-
 impl<'a> Iterator for TreeAnagrammer<'a> {
     type Item = (&'a StrTree, StaticWord);
     fn next(&mut self) -> Option<Self::Item> {
-        let Some(it) = self.cursor.last_mut() else {
+        if self.cursor.is_empty() {
             return None;
-        };
+        }
 
-        if let Some(child) = it.filter(|c| self.set.remove(&c.data.unwrap())).next() {
-            self.word.push(child.data.unwrap());
-            self.cursor.push(child.children.iter());
-            Some((child, self.word))
-        } else {
-            if let Some(c) = self.word.pop() {
-                self.set.insert(c);
+        debug_assert_eq!(self.parents.len(), self.cursor.len());
+        debug_assert_eq!(self.states.len(), self.cursor.len());
+        let last = self.parents.len() - 1;
+
+        match self.states.last()? {
+            LevelState::UsingJoker => {
+                if let Some(child) = self.next_child() {
+                    self.push_child(child);
+                    Some((child, self.word))
+                } else {
+                    self.cursor[last] = self.parents[last].children.iter();
+                    self.states[last] = LevelState::JokerUsed;
+                    self.nb_available_jokers += 1;
+                    self.next()
+                }
             }
-            self.cursor.pop();
-            self.next()
+
+            LevelState::JokerUsed => {
+                if let Some(child) = self.next_child_from_set() {
+                    self.push_child(child);
+                    Some((child, self.word))
+                } else {
+                    self.pop_child();
+                    self.next()
+                }
+            }
         }
     }
 }

@@ -113,6 +113,46 @@ fn tree_anagrammer() {
 }
 
 #[test]
+fn tree_anagrammer_with_joker() {
+    let tree = str_tree::build_dict_from_file("src/test/words.txt").expect("File not found");
+    let walker = tree
+        .anagrams("arbr0")
+        .map(|mut static_word| static_word.into_word().iter().collect::<String>());
+
+    let anagrams = walker.collect::<Vec<_>>();
+    let correct_answer = vec![
+        "arbrE".to_string(),
+        "bar".to_string(),
+        "Bar".to_string(),
+        "bAr".to_string(),
+        "baR".to_string(),
+        "barrE".to_string(),
+    ];
+    assert_unordered_equal(anagrams, correct_answer);
+}
+
+#[test]
+fn tree_anagrammer_with_2_joker() {
+    let tree = str_tree::build_dict_from_file("src/test/words.txt").expect("File not found");
+    let walker = tree
+        .anagrams("ar00e")
+        .map(|mut static_word| static_word.into_word().iter().collect::<String>());
+
+    let anagrams = walker.collect::<Vec<_>>();
+    let correct_answer = vec![
+        "Bar".to_string(),
+        "BAr".to_string(),
+        "BaR".to_string(),
+        "arBRe".to_string(),
+        "aRBre".to_string(),
+        "BarBe".to_string(),
+        "BaRre".to_string(),
+        "BarRe".to_string(),
+    ];
+    assert_unordered_equal(anagrams, correct_answer);
+}
+
+#[test]
 fn add_word() {
     let mut tree = str_tree::build_dict_from_file("src/test/words.txt").expect("File not found");
     assert!(!tree.is_word("erreur"));
