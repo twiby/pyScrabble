@@ -71,7 +71,7 @@ enum LevelState {
 }
 
 #[derive(Debug)]
-struct TreeAnagrammer<'a> {
+pub(crate) struct TreeAnagrammer<'a> {
     // Itertaor state
     states: Vec<LevelState>,
     parents: Vec<&'a StrTree>,
@@ -81,8 +81,9 @@ struct TreeAnagrammer<'a> {
     word: StaticWord,
     set: LetterSet,
     nb_available_jokers: usize,
+
     // Constraints type
-    // nb_letters: CNbL,
+    nb_letters: Option<Vec<usize>>,
     // letter_constraints: CL,
     // word_constraints: CW,
 }
@@ -95,6 +96,7 @@ impl<'a> TreeAnagrammer<'a> {
             word: Default::default(),
             nb_available_jokers: set.iter().filter(|&&c| c == '0').count(),
             set: LetterSet::from_letters(set),
+            nb_letters: None,
         };
 
         ret.cursor.push(tree.children.iter());
@@ -107,6 +109,10 @@ impl<'a> TreeAnagrammer<'a> {
         }
 
         ret
+    }
+    pub(crate) fn with_nb_letters(mut self, nb_letters: Vec<usize>) -> Self {
+        self.nb_letters = Some(nb_letters);
+        self
     }
     fn push_child(&mut self, child: &'a StrTree) {
         let mut c = child.data.unwrap();
@@ -148,11 +154,20 @@ impl<'a> TreeAnagrammer<'a> {
 
     /// Final check before returning
     fn return_state_if_valid(&mut self) -> Option<StaticWord> {
-        if self.parents.last()?.is_word {
-            Some(self.word)
-        } else {
-            self.next()
+        if !self.parents.last()?.is_word {
+            return self.next();
         }
+
+        if !self
+            .nb_letters
+            .as_ref()
+            .map(|v| v.contains(&self.word.len()))
+            .unwrap_or(true)
+        {
+            return self.next();
+        }
+
+        Some(self.word)
     }
 }
 impl<'a> Iterator for TreeAnagrammer<'a> {
@@ -206,7 +221,7 @@ impl StrTree {
             .map(|(_, word)| word)
     }
 
-    pub(crate) fn anagrams(&self, letters: &str) -> impl Iterator<Item = StaticWord> + '_ {
+    pub(crate) fn anagrams(&self, letters: &str) -> TreeAnagrammer {
         let letter_set_vec: Vec<char> = letters.chars().collect();
         TreeAnagrammer::new(self, letter_set_vec)
     }
