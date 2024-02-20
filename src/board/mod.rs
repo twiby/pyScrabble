@@ -61,5 +61,5 @@ pub trait BoardService {
 }
 
 pub fn deserialize(message: &str) -> Result<Board, DeserializingError> {
-    return Board::deserialize(message.clone());
+    return Board::deserialize(message);
 }

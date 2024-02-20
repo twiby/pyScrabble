@@ -91,7 +91,7 @@ where
     }
 
     for word in words_buf {
-        let score = board.get_score::<T>(word.into_word(), x, y)?;
+        let score = board.get_score::<T>(word.as_slice(), x, y)?;
         if score > best_score {
             best_score = score;
             best_word = word.str();
@@ -193,7 +193,7 @@ where
             if y + word.len() - 1 < 7 {
                 continue;
             }
-            let score = board.get_score::<NotTransposed>(word.into_word(), 7, y)?;
+            let score = board.get_score::<NotTransposed>(word.as_slice(), 7, y)?;
 
             if score > best_score {
                 best_score = score;
