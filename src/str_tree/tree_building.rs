@@ -37,7 +37,7 @@ impl<'a> Iterator for TreeIter<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct LetterSet {
     data: Vec<char>,
 }
@@ -67,10 +67,11 @@ impl LetterSet {
 #[derive(Debug, PartialEq)]
 enum LevelState {
     UsingJoker,
-    JokerUsed,
+    UsingLetter,
+    ConstraintLetter(char),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct TreeAnagrammer<'a> {
     // Itertaor state
     states: Vec<LevelState>,
@@ -83,52 +84,84 @@ pub(crate) struct TreeAnagrammer<'a> {
     nb_available_jokers: usize,
 
     // Constraints type
-    nb_letters: Option<Vec<usize>>,
-    // letter_constraints: CL,
+    nb_letters: Option<Vec<bool>>,
+    letter_constraints: Option<Vec<Option<char>>>,
     // word_constraints: CW,
 }
 impl<'a> TreeAnagrammer<'a> {
     fn new(tree: &'a StrTree, set: Vec<char>) -> Self {
         let mut ret = Self {
-            states: vec![],
-            parents: vec![],
-            cursor: vec![],
-            word: Default::default(),
             nb_available_jokers: set.iter().filter(|&&c| c == '0').count(),
             set: LetterSet::from_letters(set),
-            nb_letters: None,
+            ..Default::default()
         };
-
-        ret.cursor.push(tree.children.iter());
-        ret.parents.push(tree);
-        if ret.nb_available_jokers == 0 {
-            ret.states.push(LevelState::JokerUsed);
-        } else {
-            ret.states.push(LevelState::UsingJoker);
-            ret.nb_available_jokers -= 1;
-        }
-
+        ret.push_child(tree);
         ret
     }
-    pub(crate) fn with_nb_letters(mut self, nb_letters: Vec<usize>) -> Self {
+    pub(crate) fn with_nb_letters(mut self, nb_letters_in: Vec<usize>) -> Self {
+        let mut nb_letters = vec![];
+        for pos in nb_letters_in {
+            nb_letters.resize(pos + 1, false);
+            nb_letters[pos] = true;
+        }
         self.nb_letters = Some(nb_letters);
         self
     }
-    fn push_child(&mut self, child: &'a StrTree) {
-        let mut c = child.data.unwrap();
-        if self.states.last() == Some(&LevelState::UsingJoker) {
-            c = c.to_ascii_uppercase();
+    pub(crate) fn valid_length(&mut self, len: usize) -> bool {
+        self.nb_letters
+            .as_ref()
+            .map_or(true, |v| *v.get(len).unwrap_or(&false))
+    }
+    pub(crate) fn with_letter_constraints(
+        mut self,
+        letter_constraints: Vec<(usize, char)>,
+    ) -> Self {
+        let mut constraints = vec![];
+        for (pos, c) in letter_constraints {
+            constraints.resize(pos + 1, None);
+            constraints[pos] = Some(c);
         }
-        self.word.push(c);
+
+        if let Some(Some(c)) = constraints.get(0) {
+            self.states
+                .first_mut()
+                .map(|state| *state = LevelState::ConstraintLetter(*c));
+        }
+
+        self.letter_constraints = Some(constraints);
+        self
+    }
+    fn get_letter_constraint(&self, pos: usize) -> Option<char> {
+        self.letter_constraints
+            .as_ref()
+            .and_then(|v| v.get(pos).copied())?
+    }
+    fn push_child(&mut self, child: &'a StrTree) {
+        if let Some(mut c) = child.data {
+            c = match self.states.last() {
+                Some(&LevelState::UsingLetter) => c,
+                Some(&LevelState::UsingJoker) => c.to_ascii_uppercase(),
+                Some(&LevelState::ConstraintLetter(_)) => '_',
+                None => unreachable!(),
+            };
+            self.word.push(c);
+        }
+
         self.cursor.push(child.children.iter());
         self.parents.push(child);
 
-        if self.nb_available_jokers == 0 {
-            self.states.push(LevelState::JokerUsed);
-        } else {
-            self.states.push(LevelState::UsingJoker);
-            self.nb_available_jokers -= 1;
-        }
+        self.states
+            .push(match self.get_letter_constraint(self.word.len()) {
+                Some(c) => LevelState::ConstraintLetter(c),
+                None => {
+                    if self.nb_available_jokers == 0 {
+                        LevelState::UsingLetter
+                    } else {
+                        self.nb_available_jokers -= 1;
+                        LevelState::UsingJoker
+                    }
+                }
+            });
     }
     fn pop_child(&mut self) {
         self.cursor.pop();
@@ -144,12 +177,13 @@ impl<'a> TreeAnagrammer<'a> {
         self.cursor.last_mut()?.next()
     }
     fn next_child_from_set(&mut self) -> Option<&'a StrTree> {
-        while let Some(c) = self.next_child() {
-            if self.set.remove(c.data?) {
-                return Some(c);
-            }
-        }
-        None
+        self.cursor
+            .last_mut()?
+            .filter(|child| self.set.remove(child.data.unwrap()))
+            .next()
+    }
+    fn next_child_from_constraint(&mut self, c: char) -> Option<&'a StrTree> {
+        self.cursor.last_mut()?.find(|child| child.data == Some(c))
     }
 
     /// Final check before returning
@@ -158,12 +192,11 @@ impl<'a> TreeAnagrammer<'a> {
             return self.next();
         }
 
-        if !self
-            .nb_letters
-            .as_ref()
-            .map(|v| v.contains(&self.word.len()))
-            .unwrap_or(true)
-        {
+        if !self.valid_length(self.word.len()) {
+            return self.next();
+        }
+
+        if let Some(LevelState::ConstraintLetter(_)) = self.states.last() {
             return self.next();
         }
 
@@ -187,16 +220,25 @@ impl<'a> Iterator for TreeAnagrammer<'a> {
                     self.push_child(child);
                     self.return_state_if_valid()
                 } else {
-                    // wind back the last cursor
                     self.cursor[last] = self.parents[last].children.iter();
-                    self.states[last] = LevelState::JokerUsed;
+                    self.states[last] = LevelState::UsingLetter;
                     self.nb_available_jokers += 1;
                     self.next()
                 }
             }
 
-            LevelState::JokerUsed => {
+            LevelState::UsingLetter => {
                 if let Some(child) = self.next_child_from_set() {
+                    self.push_child(child);
+                    self.return_state_if_valid()
+                } else {
+                    self.pop_child();
+                    self.next()
+                }
+            }
+
+            LevelState::ConstraintLetter(c) => {
+                if let Some(child) = self.next_child_from_constraint(*c) {
                     self.push_child(child);
                     self.return_state_if_valid()
                 } else {
