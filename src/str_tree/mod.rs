@@ -22,7 +22,7 @@ impl StaticWord {
         self.w[self.l] = c;
         self.l += 1;
     }
-    pub(crate) fn as_slice(&mut self) -> &[char] {
+    pub(crate) fn as_slice(&self) -> &[char] {
         &self.w[0..self.l]
     }
     pub(crate) fn len(&self) -> usize {

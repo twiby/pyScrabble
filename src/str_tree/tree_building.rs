@@ -143,21 +143,18 @@ impl<'a> TreeAnagrammer<'a> {
             self.word.push(c);
         }
 
+        let new_state = if let Some(c) = self.letter_constraints[self.word.len()] {
+            LevelState::ConstraintLetter(c)
+        } else if self.nb_available_jokers == 0 {
+            LevelState::UsingLetter
+        } else {
+            self.nb_available_jokers -= 1;
+            LevelState::UsingJoker
+        };
+
         self.cursor.push(child.children.iter());
         self.parents.push(child);
-
-        self.states
-            .push(match self.letter_constraints[self.word.len()] {
-                Some(c) => LevelState::ConstraintLetter(c),
-                None => {
-                    if self.nb_available_jokers == 0 {
-                        LevelState::UsingLetter
-                    } else {
-                        self.nb_available_jokers -= 1;
-                        LevelState::UsingJoker
-                    }
-                }
-            });
+        self.states.push(new_state);
     }
     fn pop_child(&mut self) {
         self.cursor.pop();
@@ -169,34 +166,16 @@ impl<'a> TreeAnagrammer<'a> {
             }
         }
     }
-    fn next_child(&mut self) -> Option<&'a StrTree> {
-        self.cursor
-            .last_mut()?
-            .filter(|c| self.word_constraints[self.word.len()].valid(c.data.unwrap()))
-            .next()
-    }
-    fn next_child_from_set(&mut self) -> Option<&'a StrTree> {
-        self.cursor
-            .last_mut()?
-            .filter(|c| self.word_constraints[self.word.len()].valid(c.data.unwrap()))
-            .filter(|c| self.set.remove(c.data.unwrap()))
-            .next()
-    }
-    fn next_child_from_constraint(&mut self, c: char) -> Option<&'a StrTree> {
-        self.cursor.last_mut()?.find(|child| child.data == Some(c))
-    }
 
-    /// Final check before returning
-    fn return_state_if_valid(&mut self) -> Option<StaticWord> {
-        if !self.parents.last()?.is_word {
-            return self.next();
+    fn valid_return(&self) -> bool {
+        if !self.parents.last().unwrap().is_word {
+            return false;
         }
 
         if let Some(LevelState::ConstraintLetter(_)) = self.states.last() {
-            return self.next();
+            return false;
         }
 
-        // let nb_letters
         let nb_letters = self
             .word
             .as_slice()
@@ -204,56 +183,64 @@ impl<'a> TreeAnagrammer<'a> {
             .filter(|c| c.is_alphabetic())
             .count();
         if !self.nb_letters[nb_letters] || nb_letters == 0 {
-            return self.next();
+            return false;
         }
 
-        Some(self.word)
+        return true;
     }
 }
 impl<'a> Iterator for TreeAnagrammer<'a> {
     type Item = StaticWord;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.cursor.is_empty() {
-            return None;
+        while !self.cursor.is_empty() {
+            debug_assert_eq!(self.parents.len(), self.cursor.len());
+            debug_assert_eq!(self.states.len(), self.cursor.len());
+            let last = self.parents.len() - 1;
+
+            match self.states[last] {
+                LevelState::UsingJoker => {
+                    if let Some(child) = self.cursor[last]
+                        .find(|c| self.word_constraints[self.word.len()].valid(c.data.unwrap()))
+                    {
+                        self.push_child(child);
+                        if self.valid_return() {
+                            return Some(self.word);
+                        }
+                    } else {
+                        self.cursor[last] = self.parents[last].children.iter();
+                        self.states[last] = LevelState::UsingLetter;
+                        self.nb_available_jokers += 1;
+                    }
+                }
+
+                LevelState::UsingLetter => {
+                    if let Some(child) = self.cursor[last].find(|c| {
+                        self.word_constraints[self.word.len()].valid(c.data.unwrap())
+                            && self.set.remove(c.data.unwrap())
+                    }) {
+                        self.push_child(child);
+                        if self.valid_return() {
+                            return Some(self.word);
+                        }
+                    } else {
+                        self.pop_child();
+                    }
+                }
+
+                LevelState::ConstraintLetter(c) => {
+                    if let Some(child) = self.cursor[last].find(|child| child.data == Some(c)) {
+                        self.push_child(child);
+                        if self.valid_return() {
+                            return Some(self.word);
+                        }
+                    } else {
+                        self.pop_child();
+                    }
+                }
+            }
         }
 
-        debug_assert_eq!(self.parents.len(), self.cursor.len());
-        debug_assert_eq!(self.states.len(), self.cursor.len());
-        let last = self.parents.len() - 1;
-
-        match self.states[last] {
-            LevelState::UsingJoker => {
-                if let Some(child) = self.next_child() {
-                    self.push_child(child);
-                    self.return_state_if_valid()
-                } else {
-                    self.cursor[last] = self.parents[last].children.iter();
-                    self.states[last] = LevelState::UsingLetter;
-                    self.nb_available_jokers += 1;
-                    self.next()
-                }
-            }
-
-            LevelState::UsingLetter => {
-                if let Some(child) = self.next_child_from_set() {
-                    self.push_child(child);
-                    self.return_state_if_valid()
-                } else {
-                    self.pop_child();
-                    self.next()
-                }
-            }
-
-            LevelState::ConstraintLetter(c) => {
-                if let Some(child) = self.next_child_from_constraint(c) {
-                    self.push_child(child);
-                    self.return_state_if_valid()
-                } else {
-                    self.pop_child();
-                    self.next()
-                }
-            }
-        }
+        None
     }
 }
 
