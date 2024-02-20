@@ -9,3 +9,10 @@ name = "rsScrabble"
 [dependencies.pyo3]
 version = "0.15.1"
 features = ["extension-module"]
+
+[dev-dependencies]
+criterion = {version = "0.3", features = ["html_reports"]}
+
+[[bench]]
+name = "anagrammer"
+harness = false
