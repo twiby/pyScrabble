@@ -7,8 +7,8 @@ type CW = Option<Vec<(u8, WordToFill)>>;
 
 #[derive(Clone, PartialEq)]
 pub struct WordToFill {
-    beginning: String,
-    end: String,
+    pub(crate) beginning: String,
+    pub(crate) end: String,
 }
 #[derive(Debug)]
 pub struct NoWordToFillError;

@@ -1,3 +1,4 @@
+use crate::board::WordToFill;
 use crate::str_tree::WordError;
 use crate::str_tree::SIDE;
 use crate::str_tree::{cnt_lines, read_lines};
@@ -34,6 +35,42 @@ impl<'a> Iterator for TreeIter<'a> {
         self.cursor.push(it);
         self.cursor.push(child.children.iter());
         Some((child, self.word))
+    }
+}
+
+#[derive(Clone, Debug)]
+struct WordConstraint<'a> {
+    node: &'a StrTree,
+    end: String,
+}
+trait WordConstraintTrait {
+    fn valid(&self, c: char) -> bool;
+}
+impl<'a> WordConstraint<'a> {
+    fn new(tree: &'a StrTree, to_fill: WordToFill) -> Result<Self, WordError> {
+        let Some(node) = tree.get_node(&to_fill.beginning) else {
+            return Err(WordError::UnknownConstraint(format!(
+                "Constraint node doesn't exist: {:?}",
+                to_fill.beginning
+            )));
+        };
+        Ok(Self {
+            node,
+            end: to_fill.end,
+        })
+    }
+}
+impl<'a> WordConstraintTrait for Option<WordConstraint<'a>> {
+    fn valid(&self, c: char) -> bool {
+        match self {
+            Some(constraint) => {
+                let Some(node) = constraint.node.get_child(c) else {
+                    return false;
+                };
+                node.is_word(&constraint.end)
+            }
+            None => true,
+        }
     }
 }
 
@@ -84,58 +121,53 @@ pub(crate) struct TreeAnagrammer<'a> {
     nb_available_jokers: usize,
 
     // Constraints type
-    nb_letters: Option<Vec<bool>>,
-    letter_constraints: Option<Vec<Option<char>>>,
-    // word_constraints: CW,
+    nb_letters: [bool; SIDE],
+    letter_constraints: [Option<char>; SIDE],
+    word_constraints: [Option<WordConstraint<'a>>; SIDE],
 }
+
 impl<'a> TreeAnagrammer<'a> {
     fn new(tree: &'a StrTree, set: Vec<char>) -> Self {
         let mut ret = Self {
             nb_available_jokers: set.iter().filter(|&&c| c == '0').count(),
             set: LetterSet::from_letters(set),
+            nb_letters: [true; SIDE],
             ..Default::default()
         };
         ret.push_child(tree);
         ret
     }
-    pub(crate) fn with_nb_letters(mut self, nb_letters_in: Vec<usize>) -> Self {
-        let mut nb_letters = vec![];
+    pub(crate) fn with_nb_letters(mut self, nb_letters_in: Vec<u8>) -> Self {
+        self.nb_letters = [false; SIDE];
         for pos in nb_letters_in {
-            nb_letters.resize(pos + 1, false);
-            nb_letters[pos] = true;
+            self.nb_letters[pos as usize] = true;
         }
-        self.nb_letters = Some(nb_letters);
         self
     }
-    pub(crate) fn valid_length(&mut self, len: usize) -> bool {
-        self.nb_letters
-            .as_ref()
-            .map_or(true, |v| *v.get(len).unwrap_or(&false))
-    }
-    pub(crate) fn with_letter_constraints(
-        mut self,
-        letter_constraints: Vec<(usize, char)>,
-    ) -> Self {
-        let mut constraints = vec![];
+    pub(crate) fn with_letter_constraints(mut self, letter_constraints: Vec<(u8, char)>) -> Self {
         for (pos, c) in letter_constraints {
-            constraints.resize(pos + 1, None);
-            constraints[pos] = Some(c);
+            self.letter_constraints[pos as usize] = Some(c);
         }
 
-        if let Some(Some(c)) = constraints.get(0) {
+        if let Some(c) = self.letter_constraints[0] {
             self.states
                 .first_mut()
-                .map(|state| *state = LevelState::ConstraintLetter(*c));
+                .map(|state| *state = LevelState::ConstraintLetter(c));
         }
 
-        self.letter_constraints = Some(constraints);
         self
     }
-    fn get_letter_constraint(&self, pos: usize) -> Option<char> {
-        self.letter_constraints
-            .as_ref()
-            .and_then(|v| v.get(pos).copied())?
+    pub(crate) fn with_word_constraints(
+        mut self,
+        word_constraints: Vec<(u8, WordToFill)>,
+    ) -> Result<Self, WordError> {
+        for (pos, to_fill) in word_constraints {
+            self.word_constraints[pos as usize] =
+                Some(WordConstraint::new(self.parents[0], to_fill)?);
+        }
+        Ok(self)
     }
+
     fn push_child(&mut self, child: &'a StrTree) {
         if let Some(mut c) = child.data {
             c = match self.states.last() {
@@ -151,7 +183,7 @@ impl<'a> TreeAnagrammer<'a> {
         self.parents.push(child);
 
         self.states
-            .push(match self.get_letter_constraint(self.word.len()) {
+            .push(match self.letter_constraints[self.word.len()] {
                 Some(c) => LevelState::ConstraintLetter(c),
                 None => {
                     if self.nb_available_jokers == 0 {
@@ -173,12 +205,21 @@ impl<'a> TreeAnagrammer<'a> {
             }
         }
     }
+    fn iter_child(&mut self) -> impl Iterator<Item = &'a StrTree> {
+        self.cursor
+            .last_mut()
+            .map(|c| {
+                c.filter(|c| self.word_constraints[self.word.len()].valid(c.data.unwrap()))
+                    .next()
+            })
+            .into_iter()
+            .flatten()
+    }
     fn next_child(&mut self) -> Option<&'a StrTree> {
-        self.cursor.last_mut()?.next()
+        self.iter_child().next()
     }
     fn next_child_from_set(&mut self) -> Option<&'a StrTree> {
-        self.cursor
-            .last_mut()?
+        self.iter_child()
             .filter(|child| self.set.remove(child.data.unwrap()))
             .next()
     }
@@ -192,7 +233,7 @@ impl<'a> TreeAnagrammer<'a> {
             return self.next();
         }
 
-        if !self.valid_length(self.word.len()) {
+        if !self.nb_letters[self.word.len()] {
             return self.next();
         }
 
