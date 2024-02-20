@@ -4,7 +4,9 @@
 mod test;
 
 mod str_tree;
-use str_tree::Dictionnary;
+pub use str_tree::build_dict_from_file;
+pub use str_tree::initiate_word_buf;
+pub use str_tree::Dictionnary;
 
 mod constraints;
 
