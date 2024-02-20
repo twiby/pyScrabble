@@ -2,18 +2,9 @@ mod constraints;
 pub use constraints::PotentialWord;
 pub use constraints::WordToFill;
 
-pub trait ConstraintNbLetters: Clone {
-    fn sort_and_fuse(&mut self);
-    fn decrease(&mut self) -> bool;
-}
-pub trait ConstraintLetters: Clone {
-    fn sort_and_fuse(&mut self);
-    fn decrease(&mut self) -> Option<char>;
-}
-pub trait ConstraintWords: Clone {
-    fn sort_and_fuse(&mut self);
-    fn decrease(&mut self, c: char) -> Option<String>;
-}
+pub trait ConstraintNbLetters: Clone {}
+pub trait ConstraintLetters: Clone {}
+pub trait ConstraintWords: Clone {}
 
 pub trait PotentialWordConditions<CNbL, CL, CW>
 where
