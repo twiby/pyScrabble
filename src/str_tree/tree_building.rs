@@ -48,7 +48,7 @@ struct LetterSet {
 impl LetterSet {
     fn from_letters(letters: Vec<char>) -> Self {
         Self {
-            data: letters.clone().into(),
+            data: letters.into(),
         }
     }
     fn remove(&mut self, val: char) -> bool {
@@ -65,19 +65,24 @@ impl LetterSet {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 enum LevelState {
     UsingJoker,
     UsingLetter,
     ConstraintLetter(char),
 }
+impl Default for LevelState {
+    fn default() -> Self {
+        LevelState::UsingLetter
+    }
+}
 
 #[derive(Debug, Default)]
 pub(crate) struct TreeAnagrammer<'a> {
     // Iterator state
-    states: Vec<LevelState>,
-    parents: Vec<&'a StrTree>,
-    cursor: Vec<std::slice::Iter<'a, StrTree>>,
+    states: [LevelState; SIDE],
+    parents: [Option<&'a StrTree>; SIDE],
+    cursor: [std::slice::Iter<'a, StrTree>; SIDE],
 
     // letter info
     word: StaticWord,
@@ -114,9 +119,7 @@ impl<'a> TreeAnagrammer<'a> {
         }
 
         if let Some(c) = self.letter_constraints[0] {
-            self.states
-                .first_mut()
-                .map(|state| *state = LevelState::ConstraintLetter(c));
+            self.states[0] = LevelState::ConstraintLetter(c);
         }
 
         self
@@ -127,18 +130,17 @@ impl<'a> TreeAnagrammer<'a> {
     ) -> Result<Self, WordError> {
         for (pos, to_fill) in word_constraints {
             self.word_constraints[pos as usize] =
-                Some(WordConstraint::new(self.parents[0], to_fill)?);
+                Some(WordConstraint::new(self.parents[0].unwrap(), to_fill)?);
         }
         Ok(self)
     }
 
     fn push_child(&mut self, child: &'a StrTree) {
         if let Some(mut c) = child.data {
-            c = match self.states.last() {
-                Some(&LevelState::UsingLetter) => c,
-                Some(&LevelState::UsingJoker) => c.to_ascii_uppercase(),
-                Some(&LevelState::ConstraintLetter(_)) => '_',
-                None => unreachable!(),
+            c = match self.states[self.word.len()] {
+                LevelState::UsingLetter => c,
+                LevelState::UsingJoker => c.to_ascii_uppercase(),
+                LevelState::ConstraintLetter(_) => '_',
             };
             self.word.push(c);
         }
@@ -152,14 +154,11 @@ impl<'a> TreeAnagrammer<'a> {
             LevelState::UsingJoker
         };
 
-        self.cursor.push(child.children.iter());
-        self.parents.push(child);
-        self.states.push(new_state);
+        self.cursor[self.word.len()] = child.children.iter();
+        self.parents[self.word.len()] = Some(child);
+        self.states[self.word.len()] = new_state
     }
     fn pop_child(&mut self) {
-        self.cursor.pop();
-        self.parents.pop();
-        self.states.pop();
         if let Some(c) = self.word.pop() {
             if c.is_ascii_lowercase() {
                 self.set.insert(c);
@@ -168,11 +167,11 @@ impl<'a> TreeAnagrammer<'a> {
     }
 
     fn valid_return(&self) -> bool {
-        if !self.parents.last().unwrap().is_word {
+        if !self.parents[self.word.len()].unwrap().is_word {
             return false;
         }
 
-        if let Some(LevelState::ConstraintLetter(_)) = self.states.last() {
+        if let LevelState::ConstraintLetter(_) = self.states[self.word.len()] {
             return false;
         }
 
@@ -192,48 +191,59 @@ impl<'a> TreeAnagrammer<'a> {
 impl<'a> Iterator for TreeAnagrammer<'a> {
     type Item = StaticWord;
     fn next(&mut self) -> Option<Self::Item> {
-        while !self.cursor.is_empty() {
-            debug_assert_eq!(self.parents.len(), self.cursor.len());
-            debug_assert_eq!(self.states.len(), self.cursor.len());
-            let last = self.parents.len() - 1;
+        let mut finished = false;
+        let mut size = self.word.len();
 
-            match self.states[last] {
+        while !finished {
+            match self.states[size] {
                 LevelState::UsingJoker => {
-                    if let Some(child) = self.cursor[last]
+                    if let Some(child) = self.cursor[size]
                         .find(|c| self.word_constraints[self.word.len()].valid(c.data.unwrap()))
                     {
+                        size += 1;
                         self.push_child(child);
                         if self.valid_return() {
                             return Some(self.word);
+                        } else {
+                            continue;
                         }
                     } else {
-                        self.cursor[last] = self.parents[last].children.iter();
-                        self.states[last] = LevelState::UsingLetter;
+                        self.cursor[size] = self.parents[size].unwrap().children.iter();
+                        self.states[size] = LevelState::UsingLetter;
                         self.nb_available_jokers += 1;
+                        continue;
                     }
                 }
 
                 LevelState::UsingLetter => {
-                    if let Some(child) = self.cursor[last].find(|c| {
+                    if let Some(child) = self.cursor[size].find(|c| {
                         self.word_constraints[self.word.len()].valid(c.data.unwrap())
                             && self.set.remove(c.data.unwrap())
                     }) {
+                        size += 1;
                         self.push_child(child);
                         if self.valid_return() {
                             return Some(self.word);
+                        } else {
+                            continue;
                         }
                     } else {
+                        (size, finished) = size.overflowing_sub(1);
                         self.pop_child();
                     }
                 }
 
                 LevelState::ConstraintLetter(c) => {
-                    if let Some(child) = self.cursor[last].find(|child| child.data == Some(c)) {
+                    if let Some(child) = self.cursor[size].find(|child| child.data == Some(c)) {
+                        size += 1;
                         self.push_child(child);
                         if self.valid_return() {
                             return Some(self.word);
+                        } else {
+                            continue;
                         }
                     } else {
+                        (size, finished) = size.overflowing_sub(1);
                         self.pop_child();
                     }
                 }
