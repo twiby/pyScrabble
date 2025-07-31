@@ -24,17 +24,17 @@ impl BoardService for Board {
         for x in 0..SIDE {
             for y in 0..SIDE {
                 message.push(match self.at::<T>(x, y) {
-                    Board(EmptyTile) => '_',
-                    Played(LetterTile(c)) => c,
-                    Played(JokerTile(c)) => c.to_ascii_uppercase(),
-                    Board(WordBonusTile(n)) => (n + 3).to_string().chars().nth(0).unwrap(),
-                    Board(LetterBonusTile(n)) => n.to_string().chars().nth(0).unwrap(),
+                    Board(Empty) => '_',
+                    Played(Letter(c)) => c,
+                    Played(Joker(c)) => c.to_ascii_uppercase(),
+                    Board(WordBonus(n)) => (n + 3).to_string().chars().nth(0).unwrap(),
+                    Board(LetterBonus(n)) => n.to_string().chars().nth(0).unwrap(),
                 });
                 message.push(' ');
             }
             message.push('\n');
         }
-        return message;
+        message
     }
 
     fn deserialize(message: &str) -> Result<Board, DeserializingError> {
@@ -43,16 +43,16 @@ impl BoardService for Board {
         let mut tile_nb: usize = 0;
         for char in message.chars() {
             board.tiles[tile_nb] = match char {
-                '_' => Board(EmptyTile),
-                '2' => Board(LetterBonusTile(2)),
-                '3' => Board(LetterBonusTile(3)),
-                '5' => Board(WordBonusTile(2)),
-                '6' => Board(WordBonusTile(3)),
+                '_' => Board(Empty),
+                '2' => Board(LetterBonus(2)),
+                '3' => Board(LetterBonus(3)),
+                '5' => Board(WordBonus(2)),
+                '6' => Board(WordBonus(3)),
                 c => {
                     if c.is_ascii_lowercase() {
-                        Played(LetterTile(c))
+                        Played(Letter(c))
                     } else if c.is_ascii_uppercase() {
-                        Played(JokerTile(c.to_ascii_lowercase()))
+                        Played(Joker(c.to_ascii_lowercase()))
                     } else {
                         return Err(UnknownSymbol("deserialize: unknown symbol".to_string()));
                     }
@@ -64,7 +64,7 @@ impl BoardService for Board {
             return Err(WrongLength("deserialize: wrong length".to_string()));
         }
 
-        return Ok(board);
+        Ok(board)
     }
 
     fn get_conditions<T: TransposedState, PWCB>(&self, x: usize, y: usize, conditions: &mut PWCB)
@@ -130,19 +130,17 @@ impl BoardService for Board {
 
         let mut nb_letters = 0;
 
-        for (c, relative_y) in word.iter().zip(0..word.len()) {
+        for (relative_y, c) in word.iter().enumerate() {
             let absolute_y = y + relative_y;
             let mut local_letter_bonus = 1;
             let mut local_word_bonus = 1;
 
             word_value += match (c, self.at::<T>(x, absolute_y)) {
                 // Case of constraint: there must be a letter on the board
-                ('_', Played(JokerTile(_))) => {
-                    0;
+                ('_', Played(Joker(_))) => {
                     continue;
                 }
-                ('_', Played(LetterTile(c2))) => {
-                    get_value_lowercase(c2);
+                ('_', Played(Letter(_))) => {
                     continue;
                 }
                 ('_', _) => {
@@ -152,16 +150,16 @@ impl BoardService for Board {
                 }
 
                 // Case of letter: there must be no letter on the board
-                (_, Board(EmptyTile)) => {
+                (_, Board(Empty)) => {
                     nb_letters += 1;
                     get_value(*c)?
                 }
-                (_, Board(LetterBonusTile(n))) => {
+                (_, Board(LetterBonus(n))) => {
                     nb_letters += 1;
                     local_letter_bonus = n as usize;
                     local_letter_bonus * get_value(*c)?
                 }
-                (_, Board(WordBonusTile(n))) => {
+                (_, Board(WordBonus(n))) => {
                     nb_letters += 1;
                     local_word_bonus = n as usize;
                     word_bonus *= local_word_bonus;
@@ -188,28 +186,28 @@ impl BoardService for Board {
             other_words_formed += 50;
         }
 
-        return Ok(word_value * word_bonus + other_words_formed);
+        Ok(word_value * word_bonus + other_words_formed)
     }
 }
 
 impl Board {
     fn new_empty() -> Board {
-        return Board {
-            tiles: [Board(EmptyTile); SIZE],
-        };
+        Board {
+            tiles: [Board(Empty); SIZE],
+        }
     }
 
     // Accessors
     fn at<T: TransposedState>(&self, x: usize, y: usize) -> Tile {
         let (x_transposed, y_transposed) = T::transposed_coord(x, y);
-        return self.tiles[x_transposed * SIDE + y_transposed];
+        self.tiles[x_transposed * SIDE + y_transposed]
     }
     #[allow(dead_code)]
     fn at_nopanic<T: TransposedState>(&self, x: usize, y: usize) -> Option<Tile> {
         if x >= SIDE || y >= SIDE {
             return None;
         }
-        return Some(self.at::<T>(x, y));
+        Some(self.at::<T>(x, y))
     }
 
     fn get_above<T: TransposedState>(&self, x: usize, y: usize) -> String {
@@ -221,7 +219,7 @@ impl Board {
             };
         }
 
-        return above.chars().rev().collect::<String>();
+        above.chars().rev().collect::<String>()
     }
 
     fn get_below<T: TransposedState>(&self, x: usize, y: usize) -> String {
@@ -232,6 +230,6 @@ impl Board {
                 None => break,
             };
         }
-        return below;
+        below
     }
 }

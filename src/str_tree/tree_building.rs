@@ -58,23 +58,19 @@ impl LetterSet {
                 return true;
             }
         }
-        return false;
+        false
     }
     fn insert(&mut self, val: char) {
         self.data.push(val)
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
 enum LevelState {
     UsingJoker,
+    #[default]
     UsingLetter,
     ConstraintLetter(char),
-}
-impl Default for LevelState {
-    fn default() -> Self {
-        LevelState::UsingLetter
-    }
 }
 
 #[derive(Debug, Default)]
@@ -185,7 +181,7 @@ impl<'a> TreeAnagrammer<'a> {
             return false;
         }
 
-        return true;
+        true
     }
 }
 impl<'a> Iterator for TreeAnagrammer<'a> {
@@ -328,19 +324,19 @@ impl Dictionnary for StrTree {
 
     fn is_word(&self, word: &str) -> bool {
         match self.get_node(word) {
-            None => return false,
-            Some(node) => return node.is_word,
-        };
+            None => false,
+            Some(node) => node.is_word,
+        }
     }
 }
 
 impl StrTree {
     fn init() -> Self {
-        return Self {
+        Self {
             data: None,
             is_word: false,
             children: Vec::new(),
-        };
+        }
     }
 
     fn get_child_idx(&self, c: char) -> Option<usize> {
@@ -349,7 +345,7 @@ impl StrTree {
                 return Some(i);
             }
         }
-        return None;
+        None
     }
 
     fn get_child(&self, c: char) -> Option<&StrTree> {
@@ -358,9 +354,9 @@ impl StrTree {
 
     fn get_or_make_child(&mut self, c: char) -> &mut StrTree {
         match self.get_child_idx(c) {
-            Some(idx) => return &mut self.children[idx],
-            None => return self.add_child(c),
-        };
+            Some(idx) => &mut self.children[idx],
+            None => self.add_child(c),
+        }
     }
 
     fn add_child(&mut self, c: char) -> &mut StrTree {
@@ -370,7 +366,7 @@ impl StrTree {
             children: Vec::new(),
         };
         self.children.push(new_tree);
-        return self.children.last_mut().unwrap();
+        self.children.last_mut().unwrap()
     }
 
     fn get_node(&self, word: &str) -> Option<&StrTree> {
@@ -378,23 +374,21 @@ impl StrTree {
         for c in word.chars() {
             node = node.get_child(c)?;
         }
-        return Some(node);
+        Some(node)
     }
 
     // The output is wrapped in a Result to allow matching on errors
     fn fill_with_file(&mut self, filename: &str) -> std::io::Result<u32> {
-        let nb_lines = cnt_lines(&filename)?;
-        println!("reading {} words from file", nb_lines);
+        let nb_lines = cnt_lines(filename)?;
+        println!("reading {nb_lines} words from file");
 
-        let reader = read_lines(&filename)?;
+        let reader = read_lines(filename)?;
         let mut nb_words: u32 = 0;
-        for line in reader {
-            if let Ok(word) = line {
-                self.add_word(&word);
-                nb_words += 1;
-            }
+        for word in reader.map_while(Result::ok) {
+            self.add_word(&word);
+            nb_words += 1;
         }
 
-        return Ok(nb_words);
+        Ok(nb_words)
     }
 }

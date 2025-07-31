@@ -1,13 +1,13 @@
 #[derive(Copy, Clone, Debug)]
 pub enum PlayedTile {
-    LetterTile(char),
-    JokerTile(char),
+    Letter(char),
+    Joker(char),
 }
 #[derive(Copy, Clone, Debug)]
 pub enum BoardTile {
-    EmptyTile,
-    LetterBonusTile(u8),
-    WordBonusTile(u8),
+    Empty,
+    LetterBonus(u8),
+    WordBonus(u8),
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -18,16 +18,13 @@ pub enum Tile {
 
 impl Tile {
     pub fn is_occupied(&self) -> bool {
-        match self.letter() {
-            None => false,
-            Some(_) => true,
-        }
+        self.letter().is_some()
     }
 
     pub fn letter(&self) -> Option<char> {
         match self {
-            Tile::Played(PlayedTile::LetterTile(c)) => Some(*c),
-            Tile::Played(PlayedTile::JokerTile(c)) => Some(c.to_ascii_uppercase()),
+            Tile::Played(PlayedTile::Letter(c)) => Some(*c),
+            Tile::Played(PlayedTile::Joker(c)) => Some(c.to_ascii_uppercase()),
             _ => None,
         }
     }

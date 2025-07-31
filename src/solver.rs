@@ -10,6 +10,7 @@ use crate::constraints::{PotentialWord, PotentialWordConditions, PotentialWordCo
 use pyo3::prelude::{pyclass, pymethods};
 
 type WordSearchResult = Result<Option<BestWord>, WordError>;
+type SearchResult = Result<(), WordError>;
 
 #[derive(Debug, PartialEq)]
 #[pyclass]
@@ -40,7 +41,7 @@ impl BestWord {
             ret.push_str("horizontally -> ");
         }
         ret.push_str(&self.score.to_string());
-        return Ok(ret);
+        Ok(ret)
     }
 }
 
@@ -152,19 +153,35 @@ pub trait Timer {
 }
 impl Timer for WithTimer {
     fn timer(t: &mut std::time::Duration) -> Option<&mut std::time::Duration> {
-        return Some(t);
+        Some(t)
     }
     fn print(t: &std::time::Duration) {
-        println!("Anagram time: {:?}", t);
+        println!("Anagram time: {t:?}");
     }
 }
 impl Timer for WithoutTimer {
     fn timer(_: &mut std::time::Duration) -> Option<&mut std::time::Duration> {
-        return None;
+        None
     }
-    fn print(_: &std::time::Duration) {
-        ()
-    }
+    fn print(_: &std::time::Duration) {}
+}
+
+pub fn get_anagrams<D>(
+    letter_set: &str,
+    dict: &D,
+    mut words_buf_opt: Option<&mut Vec<StaticWord>>,
+) -> SearchResult
+where
+    D: Dictionnary,
+{
+    let mut small_buffer = str_tree::initiate_word_buf(1);
+    let words_buf = match words_buf_opt {
+        None => &mut small_buffer,
+        Some(ref mut wb) => wb,
+    };
+
+    dict.get_anagrams(letter_set, words_buf, None, None, None)?;
+    Ok(())
 }
 
 pub fn find_best_first_word<B, D>(
@@ -207,7 +224,7 @@ where
         }
     }
 
-    return Ok(best_word);
+    Ok(best_word)
 }
 
 pub fn find_best_word<T: Timer, B, D>(
@@ -253,5 +270,5 @@ where
 
     T::print(&base_time);
 
-    return Ok(best_word);
+    Ok(best_word)
 }

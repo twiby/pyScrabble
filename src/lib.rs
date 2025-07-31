@@ -84,14 +84,14 @@ impl WordFinder {
     }
 
     fn is_word(&self, word: &str) -> bool {
-        return self._tree.is_word(word);
+        self._tree.is_word(word)
     }
 
     fn get_best_first_play(&mut self, word: &str, board_msg: &str) -> PyResult<Option<BestWord>> {
         let board = board::deserialize(board_msg)?;
         let bw =
             solver::find_best_first_word(word, &board, &self._tree, Some(&mut self._word_buffer))?;
-        return Ok(bw);
+        Ok(bw)
     }
 
     fn get_best_play(&mut self, word: &str, board_msg: &str) -> PyResult<Option<BestWord>> {
@@ -102,7 +102,12 @@ impl WordFinder {
             &self._tree,
             Some(&mut self._word_buffer),
         )?;
-        return Ok(bw);
+        Ok(bw)
+    }
+
+    fn get_anagrams(&mut self, word: &str) -> PyResult<Vec<String>> {
+        solver::get_anagrams(word, &self._tree, Some(&mut self._word_buffer))?;
+        Ok(self._word_buffer.iter().map(|w| w.str()).collect())
     }
 }
 
@@ -110,5 +115,5 @@ impl WordFinder {
 fn rsScrabble(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<WordFinder>()?;
     m.add_class::<BestWord>()?;
-    return Ok(());
+    Ok(())
 }

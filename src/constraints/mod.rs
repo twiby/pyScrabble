@@ -1,6 +1,6 @@
-mod constraints;
-pub use constraints::PotentialWord;
-pub use constraints::WordToFill;
+mod _constraints;
+pub use _constraints::PotentialWord;
+pub use _constraints::WordToFill;
 
 pub trait ConstraintNbLetters: Clone {}
 pub trait ConstraintLetters: Clone {}

@@ -65,7 +65,7 @@ def writeScrabbleWordsToNewFile(path):
 
 	nb_words = 0
 
-	print("Html srapping of ODS8 scrabble dictionnary")
+	print("Html srapping of ODS9 scrabble dictionnary")
 	with open(path, 'w') as f:
 
 		page = requests.get('https://www.listesdemots.net/touslesmots.htm')
@@ -74,12 +74,12 @@ def writeScrabbleWordsToNewFile(path):
 			f.write("%s\n" % word.lower())
 			nb_words += 1
 
-		for page in trange(2, 1530):
+		for page in trange(2, 1549):
 			page = requests.get('https://www.listesdemots.net/touslesmotspage'+str(page)+'.htm')
 			tree = html.fromstring(page.content)
 			for word in tree.xpath('//span/text()')[1].split(' '):
 				f.write("%s\n" % word.lower())
 				nb_words += 1
 
-	if nb_words != 411430:
+	if nb_words != 416349:
 		raise RuntimeError("Wrong number of words were fetched. Something went wrong !")

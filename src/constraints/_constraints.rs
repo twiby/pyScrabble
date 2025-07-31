@@ -14,20 +14,20 @@ pub struct WordToFill {
 pub struct NoWordToFillError;
 impl WordToFill {
     pub(crate) fn new(begin: String, end: String) -> Result<Self, NoWordToFillError> {
-        if begin == "" && end == "" {
+        if begin.is_empty() && end.is_empty() {
             return Err(NoWordToFillError);
         }
-        return Ok(Self {
+        Ok(Self {
             beginning: begin.clone(),
             end: end.clone(),
-        });
+        })
     }
 
     pub(crate) fn complete(&self, c: char) -> String {
         let mut ret = self.beginning.clone();
         ret.push(c);
         ret.push_str(&self.end);
-        return ret;
+        ret
     }
 }
 impl std::fmt::Debug for WordToFill {
@@ -51,11 +51,11 @@ pub struct PotentialWord {
 
 impl PotentialWordConditionsBuilder for PotentialWord {
     fn new() -> Self {
-        return PotentialWord {
+        PotentialWord {
             nb_letters_constraint: Vec::new(),
             letter_constraints: Vec::new(),
             word_constraints: Vec::new(),
-        };
+        }
     }
     fn reset(&mut self) {
         self.nb_letters_constraint.clear();
@@ -75,12 +75,12 @@ impl PotentialWordConditionsBuilder for PotentialWord {
 
 impl PotentialWordConditions<CNbL, CL, CW> for PotentialWord {
     fn get_constraint_nb_letters(&self) -> Option<Vec<u8>> {
-        return Some(self.nb_letters_constraint.clone());
+        Some(self.nb_letters_constraint.clone())
     }
     fn get_constraint_letters(&self) -> Option<Vec<(u8, char)>> {
-        return Some(self.letter_constraints.clone());
+        Some(self.letter_constraints.clone())
     }
     fn get_constraint_words(&self) -> Option<Vec<(u8, WordToFill)>> {
-        return Some(self.word_constraints.clone());
+        Some(self.word_constraints.clone())
     }
 }

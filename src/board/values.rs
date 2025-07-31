@@ -17,5 +17,5 @@ pub fn get_value(c: char) -> Result<usize, WordError> {
     }
 }
 pub fn get_str_value(word: &str) -> Result<usize, WordError> {
-    return word.chars().map(get_value).sum();
+    word.chars().map(get_value).sum()
 }

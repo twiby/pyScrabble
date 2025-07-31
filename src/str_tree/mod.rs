@@ -80,5 +80,5 @@ pub trait Dictionnary {
 }
 
 pub fn build_dict_from_file(filename: &str) -> std::io::Result<StrTree> {
-    return StrTree::build_dict_from_file(filename);
+    StrTree::build_dict_from_file(filename)
 }

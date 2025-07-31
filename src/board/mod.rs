@@ -1,5 +1,5 @@
-mod board;
-use board::Board;
+mod _board;
+use _board::Board;
 
 mod tile;
 mod values;
@@ -43,6 +43,7 @@ pub mod transposition {
 }
 
 pub trait BoardService {
+    #[allow(unused)]
     fn serialize<T: transposition::TransposedState>(&self) -> String;
     fn deserialize(message: &str) -> Result<Board, DeserializingError>;
     fn get_conditions<T: transposition::TransposedState, PWCB>(
@@ -61,5 +62,5 @@ pub trait BoardService {
 }
 
 pub fn deserialize(message: &str) -> Result<Board, DeserializingError> {
-    return Board::deserialize(message);
+    Board::deserialize(message)
 }

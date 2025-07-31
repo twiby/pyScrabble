@@ -9,7 +9,7 @@ where
     P: AsRef<Path>,
 {
     let file = File::open(filename)?;
-    return Ok(io::BufReader::new(file).lines());
+    Ok(io::BufReader::new(file).lines())
 }
 
 pub fn cnt_lines<P>(filename: P) -> io::Result<u32>
@@ -20,7 +20,7 @@ where
 
     let mut cnt: u32 = 0;
     for _ in io::BufReader::new(file).lines() {
-        cnt = cnt + 1;
+        cnt += 1;
     }
-    return Ok(cnt);
+    Ok(cnt)
 }
